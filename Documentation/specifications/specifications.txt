@@ -1,10 +1,10 @@
-# Detailed Technical Specification — Flipboard-like Project
+# Detailed Technical Specification — Epi-Flipboard
 
 ## 1. Project Overview
 
 ### 1.1 Objective
 
-Develop a web and mobile-first content aggregation and reading platform inspired by **Flipboard**, enabling users to:
+Develop a web and mobile-first content aggregation and reading platform inspired by Flipboard, enabling users to:
 
 * Access articles from multiple sources (RSS, APIs, web scraping)
 * Personalize their content feed by topics of interest
@@ -187,4 +187,3 @@ Target: **≥ 80% coverage** for critical modules (API, ingestion, authenticatio
 
 ---
 
-*End of Detailed Technical Specification*
