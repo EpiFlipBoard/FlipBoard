@@ -27,7 +27,7 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 | Feature                         | Description                                               | Priority |
 | ------------------------------- | --------------------------------------------------------- | -------- |
-| Authentication                  | Login via email/password and OAuth (Google, Facebook)     | High     |
+| Authentication                  | Login via email/password and OAuth (Google)     | High     |
 | Content Ingestion               | Automatic collection of RSS feeds and HTML parsing        | High     |
 | Article Reading                 | Stylized display (magazine layout) with smooth pagination | High     |
 | Category/Topic Filtering        | Filter content by category or tags                        | Medium   |
