@@ -13,18 +13,21 @@ function Home() {
   const favIds = useMemo(() => new Set(favorites.map(a => a.id)), [favorites])
 
   return (
-    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
       {sample.map(a => (
-        <article key={a.id} className="bg-white shadow rounded-lg p-4 flex flex-col">
-          <h2 className="text-lg font-semibold">{a.title}</h2>
-          <p className="text-xs text-gray-500">{a.source}</p>
-          <p className="mt-2 text-sm text-gray-700">{a.summary}</p>
-          <div className="mt-4 flex gap-2">
-            <Link to={`/article/${a.id}`} className="px-3 py-1 rounded bg-blue-600 text-white text-sm">Read</Link>
-            <button
-              className={"px-3 py-1 rounded text-sm " + (favIds.has(a.id) ? 'bg-yellow-500 text-white' : 'bg-gray-200 text-gray-800')}
-              onClick={() => setFavorites(toggleFavorite(a))}
-            >{favIds.has(a.id) ? 'Saved' : 'Save'}</button>
+        <article key={a.id} className="card">
+          <div className="h-28 bg-gradient-to-br from-brand-red to-pink-600" />
+          <div className="p-4 flex flex-col">
+            <h2 className="card-title">{a.title}</h2>
+            <p className="text-xs text-gray-500">{a.source}</p>
+            <p className="mt-2 text-sm text-gray-700">{a.summary}</p>
+            <div className="mt-4 flex gap-2">
+              <Link to={`/article/${a.id}`} className="btn btn-primary">Read</Link>
+              <button
+                className={"btn " + (favIds.has(a.id) ? 'bg-yellow-500 text-white' : 'btn-muted')}
+                onClick={() => setFavorites(toggleFavorite(a))}
+              >{favIds.has(a.id) ? 'Saved' : 'Save'}</button>
+            </div>
           </div>
         </article>
       ))}

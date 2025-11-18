@@ -15,31 +15,31 @@ function NavBar() {
     navigate('/login')
   }
   return (
-    <header className="bg-white shadow">
+    <header className="sticky top-0 z-40 bg-brand-red shadow">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-blue-600">Epi-Flipboard</Link>
-        <nav className="flex gap-4 text-sm items-center">
-          <NavLink to="/" end className={({isActive}) => isActive ? 'text-blue-600 font-medium' : 'text-gray-600'}>Home</NavLink>
-          <NavLink to="/favorites" className={({isActive}) => isActive ? 'text-blue-600 font-medium' : 'text-gray-600'}>Favorites</NavLink>
-          <NavLink to="/search" className={({isActive}) => isActive ? 'text-blue-600 font-medium' : 'text-gray-600'}>Search</NavLink>
-          <NavLink to="/admin" className={({isActive}) => isActive ? 'text-blue-600 font-medium' : 'text-gray-600'}>Admin</NavLink>
+        <Link to="/" className="text-xl font-bold text-white">Epi-Flipboard</Link>
+        <nav className="flex gap-6 text-sm items-center">
+          <NavLink to="/" end className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Home</NavLink>
+          <NavLink to="/favorites" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Favorites</NavLink>
+          <NavLink to="/search" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Search</NavLink>
+          <NavLink to="/admin" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Admin</NavLink>
           {user ? (
             <div className="relative">
-              <button onClick={() => setOpen(!open)} className="h-8 w-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
+              <button onClick={() => setOpen(!open)} className="h-9 w-9 rounded-full bg-white text-brand-red flex items-center justify-center ring-2 ring-white/40">
                 <span className="text-sm font-semibold">{initial}</span>
               </button>
               {open && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border rounded shadow p-3">
+                <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow p-3">
                   <div className="text-sm mb-2">Disconnect?</div>
                   <div className="flex gap-2">
-                    <button className="px-2 py-1 rounded bg-gray-200" onClick={() => setOpen(false)}>Cancel</button>
-                    <button className="px-2 py-1 rounded bg-red-600 text-white" onClick={onLogout}>Disconnect</button>
+                    <button className="btn btn-muted" onClick={() => setOpen(false)}>Cancel</button>
+                    <button className="btn btn-primary" onClick={onLogout}>Disconnect</button>
                   </div>
                 </div>
               )}
             </div>
           ) : (
-            <NavLink to="/login" className={({isActive}) => isActive ? 'text-blue-600 font-medium' : 'text-gray-600'}>Login / Register</NavLink>
+            <NavLink to="/login" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Login / Register</NavLink>
           )}
         </nav>
       </div>

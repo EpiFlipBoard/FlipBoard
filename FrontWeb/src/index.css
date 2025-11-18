@@ -1,3 +1,20 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html, body, #root { height: 100%; }
+  body { @apply bg-brand-light text-brand-dark font-sans; }
+  h1 { @apply text-3xl font-bold; }
+  h2 { @apply text-2xl font-semibold; }
+}
+
+@layer components {
+  .nav-link { @apply text-white/80 hover:text-white transition; }
+  .nav-link-active { @apply text-white font-semibold; }
+  .card { @apply bg-white rounded-xl shadow-magazine overflow-hidden transition hover:shadow-xl hover:-translate-y-0.5; }
+  .card-title { @apply text-xl font-semibold; }
+  .btn { @apply inline-flex items-center justify-center px-3 py-2 rounded text-sm font-medium transition; }
+  .btn-primary { @apply bg-brand-red text-white hover:brightness-110; }
+  .btn-muted { @apply bg-gray-200 text-gray-800 hover:bg-gray-300; }
+}
