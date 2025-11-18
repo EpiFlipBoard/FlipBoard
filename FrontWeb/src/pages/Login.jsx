@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { setAuth } from '../lib/auth.js'
 
 function Login() {
   const navigate = useNavigate()
@@ -27,7 +28,7 @@ function Login() {
       })
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Login failed') }
-      localStorage.setItem('epi_token', data.token)
+      setAuth(data.token, data.user)
       navigate('/')
     } catch (err) {
       setLoginError(err.message)
@@ -48,7 +49,7 @@ function Login() {
       })
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Register failed') }
-      localStorage.setItem('epi_token', data.token)
+      setAuth(data.token, data.user)
       navigate('/')
     } catch (err) {
       setRegError(err.message)
@@ -67,10 +68,7 @@ function Login() {
           <button disabled={loginLoading} type="submit" className="w-full px-3 py-2 rounded bg-blue-600 text-white">{loginLoading ? 'Signing In...' : 'Sign In'}</button>
           {loginError && <p className="text-red-600 text-sm">{loginError}</p>}
         </form>
-        <div className="mt-4 flex gap-2">
-          <button className="px-3 py-2 rounded bg-red-500 text-white">Google</button>
-          <button className="px-3 py-2 rounded bg-blue-700 text-white">Facebook</button>
-        </div>
+        <div className="mt-4 text-sm text-gray-500">Login / Register available here</div>
       </div>
 
       <div className="max-w-md">
