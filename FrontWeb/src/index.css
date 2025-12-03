@@ -15,6 +15,7 @@
   .card { @apply bg-white rounded-xl shadow-magazine overflow-hidden transition hover:shadow-xl hover:-translate-y-0.5; }
   .card-title { @apply text-xl font-semibold; }
   .btn { @apply inline-flex items-center justify-center px-3 py-2 rounded text-sm font-medium transition; }
-  .btn-primary { @apply bg-brand-red text-white hover:brightness-110; }
+  .btn-primary { @apply bg-brand-blue text-white hover:brightness-110; }
   .btn-muted { @apply bg-gray-200 text-gray-800 hover:bg-gray-300; }
+  .search-input { @apply w-64 bg-black/40 text-white placeholder-white/50 border border-white/10 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-white/20; }
 }

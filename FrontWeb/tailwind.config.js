@@ -7,6 +7,7 @@ export default {
           red: '#E12828',
           dark: '#1A1A1A',
           light: '#F7F7F7',
+          blue: '#0000ff',
         },
       },
       fontFamily: {

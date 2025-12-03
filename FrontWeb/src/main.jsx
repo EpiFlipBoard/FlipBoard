@@ -9,6 +9,7 @@ import Favorites from './pages/Favorites.jsx'
 import Search from './pages/Search.jsx'
 import Admin from './pages/Admin.jsx'
 import Login from './pages/Login.jsx'
+import Newsletter from './pages/Newsletter.jsx'
 
 const router = createBrowserRouter([
   {
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { path: 'search', element: <Search /> },
       { path: 'admin', element: <Admin /> },
       { path: 'login', element: <Login /> },
+      { path: 'newsletter', element: <Newsletter /> },
     ],
   },
 ])

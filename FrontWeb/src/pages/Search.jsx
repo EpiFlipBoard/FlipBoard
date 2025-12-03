@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 
 const data = [
   { id: '1', title: 'AI trends in 2025', source: 'TechNews', summary: 'Overview of AI progress and its impact.' },
@@ -8,7 +8,13 @@ const data = [
 ]
 
 function Search() {
+  const location = useLocation()
   const [q, setQ] = useState('')
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const init = params.get('q') || ''
+    setQ(init)
+  }, [location.search])
   const results = useMemo(() => {
     const s = q.trim().toLowerCase()
     if (!s) return []

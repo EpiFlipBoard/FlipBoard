@@ -1,46 +1,33 @@
-import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { getUser, getUserInitial, clearAuth } from '../lib/auth.js'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
 function NavBar() {
-  const loc = useLocation()
   const navigate = useNavigate()
-  const user = getUser()
-  const initial = getUserInitial(user)
-  const [open, setOpen] = useState(false)
-
-  function onLogout() {
-    clearAuth()
-    setOpen(false)
-    navigate('/login')
+  const [q, setQ] = useState('')
+  function goSearch() {
+    const s = q.trim()
+    if (s) navigate(`/search?q=${encodeURIComponent(s)}`)
   }
   return (
-    <header className="sticky top-0 z-40 bg-brand-red shadow">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="text-xl font-bold text-white">Epi-Flipboard</Link>
+    <header className="sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue">
+      <div className="mx-10 px-4 py-3 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-3">
+          <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded" />
+          <span className="text-xl font-bold text-white">EPI-FLIPBOARD</span>
+        </Link>
         <nav className="flex gap-6 text-sm items-center">
-          <NavLink to="/" end className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Home</NavLink>
-          <NavLink to="/favorites" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Favorites</NavLink>
-          <NavLink to="/search" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Search</NavLink>
-          <NavLink to="/admin" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Admin</NavLink>
-          {user ? (
-            <div className="relative">
-              <button onClick={() => setOpen(!open)} className="h-9 w-9 rounded-full bg-white text-brand-red flex items-center justify-center ring-2 ring-white/40">
-                <span className="text-sm font-semibold">{initial}</span>
-              </button>
-              {open && (
-                <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow p-3">
-                  <div className="text-sm mb-2">Disconnect?</div>
-                  <div className="flex gap-2">
-                    <button className="btn btn-muted" onClick={() => setOpen(false)}>Cancel</button>
-                    <button className="btn btn-primary" onClick={onLogout}>Disconnect</button>
-                  </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            <NavLink to="/login" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Login / Register</NavLink>
-          )}
+          <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletter</NavLink>
+          <div className="hidden md:flex items-center">
+            <input
+              value={q}
+              onChange={e=>setQ(e.target.value)}
+              onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
+              placeholder="Search on EPI-Flipboard"
+              className="search-input"
+            />
+          </div>
+          <NavLink to="/login" className={`btn btn-primary ${({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}`}>Login</NavLink>
+          <NavLink to="/login" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Register</NavLink>
         </nav>
       </div>
     </header>
