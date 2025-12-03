@@ -8,7 +8,7 @@ function sign(user) {
   return jwt.sign({ uid: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' })
 }
 
-const DEFAULT_FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5174/login'
+const DEFAULT_FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173/'
 
 router.get('/google', (req, res) => {
   const clientId = process.env.GOOGLE_CLIENT_ID

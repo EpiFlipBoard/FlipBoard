@@ -8,7 +8,6 @@ import Article from './pages/Article.jsx'
 import Favorites from './pages/Favorites.jsx'
 import Search from './pages/Search.jsx'
 import Admin from './pages/Admin.jsx'
-import Login from './pages/Login.jsx'
 import Newsletter from './pages/Newsletter.jsx'
 
 const router = createBrowserRouter([
@@ -21,8 +20,9 @@ const router = createBrowserRouter([
       { path: 'favorites', element: <Favorites /> },
       { path: 'search', element: <Search /> },
       { path: 'admin', element: <Admin /> },
-      { path: 'login', element: <Login /> },
       { path: 'newsletter', element: <Newsletter /> },
+      { path: 'login', element: <Home /> },
+      { path: 'signup', element: <Home /> },
     ],
   },
 ])

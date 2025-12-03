@@ -29,7 +29,7 @@ function Home() {
           <h1 className="text-6xl md:text-6xl font-extrabold leading-tight">RESTEZ INFORMÉS<br/>TROUVEZ DE L'INSPIRATION</h1>
           <div className="h-3 bg-brand-blue w-full mx-auto my-4" />
           <p className="text-white/80 text-2xl">Histoires sélectionnées pour vous</p>
-          <Link to="/login" className="mt-12 mb-20 inline-flex btn btn-primary text-xl px-8 py-4">Créer un compte</Link>
+          <Link to="/login" className="mt-12 mb-20 inline-flex btn btn-primary text-lg px-8 py-4">Créer un compte</Link>
         </div>
       </section>
 

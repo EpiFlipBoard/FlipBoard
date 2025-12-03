@@ -8,7 +8,7 @@ import oauthRouter from './routes/oauth.js'
 dotenv.config()
 
 const app = express()
-const port = process.env.PORT || 4000
+const port = process.env.PORT || 4001
 const corsOriginRaw = process.env.CORS_ORIGIN || 'http://localhost:5174,http://localhost:5173'
 const corsOrigins = corsOriginRaw.split(',').map(s => s.trim())
 const mongoUri = process.env.MONGODB_URI
