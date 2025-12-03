@@ -16,7 +16,7 @@ function NavBar() {
           <span className="text-xl font-bold text-white">EPI-FLIPBOARD</span>
         </Link>
         <nav className="flex gap-6 text-sm items-center">
-          <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletter</NavLink>
+          <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletters</NavLink>
           <div className="hidden md:flex items-center">
             <input
               value={q}
