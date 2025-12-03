@@ -5,7 +5,7 @@ import User from '../models/User.js'
 
 const router = express.Router()
 
-function sign(user) {
+export function sign(user) {
   return jwt.sign({ uid: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '7d' })
 }
 

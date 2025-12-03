@@ -1,9 +1,10 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { setAuth } from '../lib/auth.js'
 
 function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
 
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -24,7 +25,7 @@ function Login() {
       const res = await fetch('http://localhost:4000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword })
+        body: JSON.stringify({ email: loginEmail.toLowerCase(), password: loginPassword })
       })
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Login failed') }
@@ -37,6 +38,21 @@ function Login() {
     }
   }
 
+  useEffect(() => {
+    const params = new URLSearchParams(location.search)
+    const token = params.get('token')
+    async function handleToken() {
+      if (!token) return
+      const res = await fetch('http://localhost:4000/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      const data = await res.json()
+      if (res.ok && data?.user) {
+        setAuth(token, data.user)
+        navigate('/')
+      }
+    }
+    handleToken()
+  }, [location.search])
+
   async function onRegister(e) {
     e.preventDefault()
     setRegError('')
@@ -45,7 +61,7 @@ function Login() {
       const res = await fetch('http://localhost:4000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword })
+        body: JSON.stringify({ name: regName, email: regEmail.toLowerCase(), password: regPassword })
       })
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Register failed') }
@@ -68,7 +84,18 @@ function Login() {
           <button disabled={loginLoading} type="submit" className="w-full btn btn-primary">{loginLoading ? 'Signing In...' : 'Sign In'}</button>
           {loginError && <p className="text-red-600 text-sm">{loginError}</p>}
         </form>
-        <div className="mt-4 text-sm text-gray-500">Login / Register available here</div>
+        <div className="mt-4 flex gap-2">
+          <button
+            type="button"
+            className="btn btn-muted"
+            onClick={() => (window.location.href = `http://localhost:4000/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin + '/login')}`)}
+          >Google</button>
+          <button
+            type="button"
+            className="btn btn-muted"
+            onClick={() => (window.location.href = `http://localhost:4000/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin + '/login')}`)}
+          >Facebook</button>
+        </div>
       </div>
 
       <div className="max-w-md card p-6">

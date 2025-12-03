@@ -3,6 +3,7 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import authRouter from './routes/auth.js'
+import oauthRouter from './routes/oauth.js'
 
 dotenv.config()
 
@@ -33,6 +34,7 @@ app.use(cors({
 app.use(express.json())
 
 app.use('/api/auth', authRouter)
+app.use('/api/auth/oauth', oauthRouter)
 
 mongoose.connect(mongoUri).then(() => {
   app.listen(port, () => {
