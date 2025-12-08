@@ -98,9 +98,12 @@ function NavBar() {
   }
   return (
     <header className="sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue">
-      <div className="mx-10 px-4 py-3 flex items-center justify-between">
+      <div className="mr-10 flex items-center justify-between">
         {user ? (
           <div className="flex items-center gap-6">
+            <Link to="/" className="flex items-center gap-2">
+              <img src="/logo.png" alt="Logo" className="h-12 w-12" />
+            </Link>
             <button className="nav-link">For you</button>
             <button className="nav-link">Today's edition</button>
             <div className="relative">
