@@ -4,6 +4,7 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
+import postsRouter from './routes/posts.js'
 
 dotenv.config()
 
@@ -35,6 +36,7 @@ app.use(express.json())
 
 app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
+app.use('/api/posts', postsRouter)
 
 mongoose.connect(mongoUri).then(() => {
   app.listen(port, () => {

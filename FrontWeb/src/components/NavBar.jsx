@@ -1,12 +1,13 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { setAuth } from '../lib/auth.js'
+import { setAuth, getUser, clearAuth } from '../lib/auth.js'
 
 function NavBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [q, setQ] = useState('')
-  const [open, setOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [profileOpen, setProfileOpen] = useState(false)
   const [mode, setMode] = useState('login')
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -17,13 +18,15 @@ function NavBar() {
   const [regPassword, setRegPassword] = useState('')
   const [regLoading, setRegLoading] = useState(false)
   const [regError, setRegError] = useState('')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const user = getUser()
   useEffect(() => {
     if (location.pathname === '/login') {
       setMode('login')
-      setOpen(true)
+      setAuthOpen(true)
     } else if (location.pathname === '/signup') {
       setMode('register')
-      setOpen(true)
+      setAuthOpen(true)
     }
   }, [location.pathname])
   function goSearch() {
@@ -40,8 +43,9 @@ function NavBar() {
       const data = await res.json()
       if (res.ok && data?.user) {
         setAuth(token, data.user)
-        setOpen(false)
+        setAuthOpen(false)
         navigate(location.pathname, { replace: true })
+        window.location.reload()
       }
     }
     handleToken()
@@ -60,7 +64,9 @@ function NavBar() {
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Login failed') }
       setAuth(data.token, data.user)
-      setOpen(false)
+      setAuthOpen(false)
+      navigate('/', { replace: true })
+      window.location.reload()
     } catch (err) {
       setLoginError(err.message)
     } finally {
@@ -81,7 +87,9 @@ function NavBar() {
       const data = await res.json()
       if (!res.ok) { throw new Error(data?.error || 'Register failed') }
       setAuth(data.token, data.user)
-      setOpen(false)
+      setAuthOpen(false)
+      navigate('/', { replace: true })
+      window.location.reload()
     } catch (err) {
       setRegError(err.message)
     } finally {
@@ -91,27 +99,71 @@ function NavBar() {
   return (
     <header className="sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue">
       <div className="mx-10 px-4 py-3 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3">
-          <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded" />
-          <span className="text-xl font-bold text-white">EPI-FLIPBOARD</span>
-        </Link>
-        <nav className="flex gap-6 text-sm items-center">
-          <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletter</NavLink>
-          <div className="hidden md:flex items-center">
-            <input
-              value={q}
-              onChange={e=>setQ(e.target.value)}
-              onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
-              placeholder="Search on EPI-Flipboard"
-              className="search-input"
-            />
+        {user ? (
+          <div className="flex items-center gap-6">
+            <button className="nav-link">For you</button>
+            <button className="nav-link">Today's edition</button>
+            <div className="relative">
+              <button className="nav-link" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
+              {menuOpen && (
+                <div className="absolute mt-2 w-40 bg-white text-brand-dark rounded shadow p-2">
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Modify</button>
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Explore more</button>
+                </div>
+              )}
+            </div>
           </div>
-          <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>Register</button>
-          <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+        ) : (
+          <Link to="/" className="flex items-center gap-3">
+            <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded" />
+            <span className="text-xl font-bold text-white">EPI-FLIPBOARD</span>
+          </Link>
+        )}
+        <nav className="flex gap-6 text-sm items-center">
+          {user ? (
+            <>
+              <button className="btn btn-primary">Post a magazine</button>
+              <button className="nav-link" title="Apps">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 8v-8h8v8z"/></svg>
+              </button>
+              <button className="nav-link" title="Notifications">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V9c0-3.07-1.63-5.64-4.5-6.32V2h-3v.68C7.63 3.36 6 5.92 6 9v7l-2 2v1h16v-1l-2-2z"/></svg>
+              </button>
+              <div className="relative">
+                <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-white/40">
+                  <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
+                </button>
+                {profileOpen && (
+                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow p-3">
+                    <div className="text-sm mb-2">Disconnect?</div>
+                    <div className="flex gap-2">
+                      <button className="btn btn-muted" onClick={() => setProfileOpen(false)}>Cancel</button>
+                      <button className="btn btn-primary" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Disconnect</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletter</NavLink>
+              <div className="hidden md:flex items-center">
+                <input
+                  value={q}
+                  onChange={e=>setQ(e.target.value)}
+                  onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
+                  placeholder="Search on EPI-Flipboard"
+                  className="search-input"
+                />
+              </div>
+              <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>Register</button>
+              <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+            </>
+          )}
         </nav>
       </div>
-
-    {open && (
+    
+    {authOpen && (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
         <div className="bg-brand-dark text-white rounded-xl shadow-magazine w-full max-w-3xl overflow-hidden">
           <div className="flex">
@@ -130,7 +182,7 @@ function NavBar() {
             <div className="flex-1 p-6">
               <div className="flex justify-between items-start">
                 <h2 className="text-xl font-semibold">{mode === 'login' ? 'Se connecter à EPI-FLIPBOARD' : 'Rejoignez EPI-FLIPBOARD'}</h2>
-                <button onClick={() => { setOpen(false); if (location.pathname === '/login' || location.pathname === '/signup') navigate('/', { replace: true }) }} className="text-white/70 hover:text-white">✕</button>
+                <button onClick={() => { setAuthOpen(false); if (location.pathname === '/login' || location.pathname === '/signup') navigate('/', { replace: true }) }} className="text-white/70 hover:text-white">✕</button>
               </div>
 
               {mode === 'login' ? (

@@ -1,15 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
+import { getToken } from '../lib/auth.js'
 
-const sample = [
-  { id: '1', title: 'AI trends in 2025', source: 'TechNews', summary: 'Overview of AI progress and its impact.', category: 'Tech et sciences' },
-  { id: '2', title: 'Designing magazines on web', source: 'WebDesign', summary: 'Patterns for immersive reading experiences.', category: 'Inédit' },
-  { id: '3', title: 'Understanding RSS today', source: 'RSS Weekly', summary: 'Best practices for feed aggregation.', category: 'Actualités' },
-  { id: '4', title: 'Local startup raises funds', source: 'LocalNews', summary: 'Promising venture in the city.', category: 'Local' },
-  { id: '5', title: 'Markets rally on earnings', source: 'FinanceDaily', summary: 'Investors react to quarterly reports.', category: 'Économie' },
-  { id: '6', title: 'Championship highlights', source: 'SportsWorld', summary: 'Key moments from last night.', category: 'Sport' },
-]
+const sample = []
 
 function Home() {
   const [favorites, setFavorites] = useState(getFavorites())
@@ -21,6 +15,25 @@ function Home() {
     if (selected === 'Explore Spotlight') return sample
     return sample.filter(a => a.category === selected)
   }, [selected])
+
+  const [posts, setPosts] = useState([])
+  useEffect(() => {
+    async function load() {
+      const res = await fetch('http://localhost:4001/api/posts')
+      const data = await res.json()
+      const mapped = (data.posts || []).map(p => ({
+        id: p._id,
+        title: p.title,
+        source: p.author,
+        summary: p.description,
+        category: p.type,
+        imageUrl: p.imageUrl,
+        likes: p.likes || 0,
+      }))
+      setPosts(mapped)
+    }
+    load()
+  }, [])
 
   return (
     <div>
@@ -45,19 +58,63 @@ function Home() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {items.map(a => (
-            <article key={a.id} className="card">
-              <div className="h-28 bg-gradient-to-br from-brand-blue to-blue-600" />
-              <div className="p-4 flex flex-col">
-                <h2 className="card-title">{a.title}</h2>
-                <p className="text-xs text-gray-500">{a.source} • {a.category}</p>
-                <p className="mt-2 text-sm text-gray-700">{a.summary}</p>
-                <div className="mt-4 flex gap-2">
-                  <Link to={`/article/${a.id}`} className="btn btn-primary">Lire</Link>
+          {posts.map(a => (
+            <article key={a.id} className="relative rounded-xl overflow-hidden shadow-magazine min-h-[280px]">
+              <div className="absolute inset-0 bg-center bg-cover" style={{ backgroundImage: `url(${a.imageUrl})` }} />
+              <div className="absolute inset-0 bg-black/40" />
+              <div className="relative z-10 h-full flex flex-col justify-end p-4 text-white">
+                <div className="text-xs uppercase tracking-wide text-white/80">{a.category}</div>
+                <h2 className="text-2xl font-bold">{a.title}</h2>
+                <div className="text-sm text-white/80">{a.source}</div>
+                <p className="mt-2 text-sm text-white/90">{a.summary}</p>
+                <div className="mt-4 flex items-center gap-3">
                   <button
-                    className={"btn " + (favIds.has(a.id) ? 'bg-yellow-500 text-white' : 'btn-muted')}
-                    onClick={() => setFavorites(toggleFavorite(a))}
-                  >{favIds.has(a.id) ? 'Enregistré' : 'Enregistrer'}</button>
+                    onClick={async () => {
+                      const token = getToken()
+                      const res = await fetch(`http://localhost:4001/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const data = await res.json()
+                      if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
+                    }}
+                    className="inline-flex items-center gap-1 text-white/90 hover:text-white"
+                    title="Like"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44C11.09 5.01 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    <span>{a.likes}</span>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const text = prompt('Votre commentaire:') || ''
+                      if (!text.trim()) return
+                      const token = getToken()
+                      await fetch(`http://localhost:4001/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
+                    }}
+                    className="inline-flex items-center gap-1 text-white/90 hover:text-white"
+                    title="Comments"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-18v12h4v4l4-4h10z"/></svg>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const token = getToken()
+                      await fetch(`http://localhost:4001/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      alert('Ajouté à votre collection')
+                    }}
+                    className="inline-flex items-center gap-1 text-white/90 hover:text-white"
+                    title="Add to collection"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3zm0 4h12v2H3zm0 4h18v2H3zm0 4h12v2H3z"/></svg>
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const url = `${window.location.origin}/article/${a.id}`
+                      if (navigator.share) { try { await navigator.share({ title: a.title, text: a.summary, url }) } catch {} } else { await navigator.clipboard.writeText(url); alert('Lien copié') }
+                    }}
+                    className="inline-flex items-center gap-1 text-white/90 hover:text-white"
+                    title="Share"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11C16.56 7.62 17.24 7.92 18 7.92c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.07 9.63C7.56 9.16 6.88 8.86 6.12 8.86c-1.66 0-3 1.34-3 3s1.34 3 3 3c.76 0 1.44-.3 1.95-.77l7.14 4.16c-.05.21-.09.43-.09.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
+                  </button>
+                  <Link to={`/article/${a.id}`} className="ml-auto btn btn-primary">Lire</Link>
                 </div>
               </div>
             </article>
