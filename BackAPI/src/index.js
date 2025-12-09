@@ -5,6 +5,9 @@ import dotenv from 'dotenv'
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
+import Post from './models/Post.js'
+import { parseAutonews } from '../scripts/parse/autonews.js'
+import { getPageScrap } from '../scripts/saveRenderedHTML.js'
 
 dotenv.config()
 
@@ -38,10 +41,46 @@ app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
 app.use('/api/posts', postsRouter)
 
-mongoose.connect(mongoUri).then(() => {
+async function importAutonewsBatch() {
+  try {
+    const items = await parseAutonews(await getPageScrap('https://www.autonews.fr'))
+    const limit = 24
+    const imageUrl = '/autonews.png'
+    const seen = new Set()
+    for (const it of items.slice(0, limit)) {
+      if (!it.url || seen.has(it.url)) continue
+      seen.add(it.url)
+      const existing = await Post.findOne({ url: it.url })
+      if (existing) {
+        existing.title = it.title
+        existing.type = 'Magazine'
+        existing.author = 'Autonews'
+        existing.description = "Un article d'AutoNews !"
+        existing.imageUrl = imageUrl
+        await existing.save()
+      } else {
+        await Post.create({
+          title: it.title,
+          type: 'Magazine',
+          author: 'Autonews',
+          description: "Un article d'AutoNews !",
+          imageUrl,
+          url: it.url,
+        })
+      }
+    }
+    console.log(`[cron] Autonews imported ${seen.size} items`)
+  } catch (e) {
+    console.error('[cron] Autonews import failed', e)
+  }
+}
+
+mongoose.connect(mongoUri).then(async () => {
   app.listen(port, () => {
     console.log(`API on http://localhost:${port}`)
   })
+  await importAutonewsBatch()
+  setInterval(importAutonewsBatch, 10 * 60 * 1000)
 }).catch(err => {
   console.error('Mongo connect error', err)
   process.exit(1)
