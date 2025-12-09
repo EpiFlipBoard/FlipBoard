@@ -102,7 +102,7 @@ function NavBar() {
         {user ? (
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
-              <img src="/logo.png" alt="Logo" className="h-12 w-12" />
+              <img src="/logo.png" alt="Logo" className="h-16 w-16" />
             </Link>
             <button className="nav-link">For you</button>
             <button className="nav-link">Today's edition</button>
@@ -125,6 +125,15 @@ function NavBar() {
         <nav className="flex gap-6 text-sm items-center">
           {user ? (
             <>
+              <div className="hidden md:flex items-center">
+                <input
+                  value={q}
+                  onChange={e=>setQ(e.target.value)}
+                  onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
+                  placeholder="Search on EPI-Flipboard"
+                  className="search-input"
+                />
+              </div>
               <button className="btn btn-primary">Post a magazine</button>
               <button className="nav-link" title="Apps">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 8v-8h8v8z"/></svg>
