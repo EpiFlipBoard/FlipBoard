@@ -6,7 +6,9 @@ import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
 import Post from './models/Post.js'
+
 import { parseAutonews } from '../scripts/parse/autonews.js'
+import { parseJeuneAfrique } from '../scripts/parse/jeuneafrique.js'
 import { getPageScrap } from '../scripts/saveRenderedHTML.js'
 
 dotenv.config()
@@ -40,6 +42,40 @@ app.use(express.json())
 app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
 app.use('/api/posts', postsRouter)
+
+async function importJeuneAfriqueBatch() {
+  try {
+    const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
+    const limit = 24
+    const imageUrl = '/jeuneafrique.png'
+    const seen = new Set()
+    for (const it of items.slice(0, limit)) {
+      if (!it.url || seen.has(it.url)) continue
+      seen.add(it.url)
+      const existing = await Post.findOne({ url: it.url })
+      if (existing) {
+        existing.title = it.title
+        existing.type = 'Magazine'
+        existing.author = 'JeuneAfrique'
+        existing.description = "Un article de JeuneAfrique !"
+        existing.imageUrl = imageUrl
+        await existing.save()
+      } else {
+        await Post.create({
+          title: it.title,
+          type: 'Magazine',
+          author: 'JeuneAfrique',
+          description: "Un article de JeuneAfrique !",
+          imageUrl,
+          url: it.url,
+        })
+      }
+    }
+    console.log(`[cron] JeuneAfrique imported ${seen.size} items`)
+  } catch (e) {
+    console.error('[cron] JeuneAfrique import failed', e)
+  }
+}
 
 async function importAutonewsBatch() {
   try {
@@ -80,7 +116,9 @@ mongoose.connect(mongoUri).then(async () => {
     console.log(`API on http://localhost:${port}`)
   })
   await importAutonewsBatch()
+  await importJeuneAfriqueBatch()
   setInterval(importAutonewsBatch, 10 * 60 * 1000)
+  setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
 }).catch(err => {
   console.error('Mongo connect error', err)
   process.exit(1)

@@ -3,8 +3,10 @@ import Post from '../models/Post.js'
 import Comment from '../models/Comment.js'
 import Collection from '../models/Collection.js'
 import auth from '../middleware/auth.js'
-import { parseAutonews } from '../../scripts/parse/autonews.js'
+
 import { getPageScrap } from '../../scripts/saveRenderedHTML.js'
+import { parseAutonews } from '../../scripts/parse/autonews.js'
+import { parseJeuneAfrique } from '../../scripts/parse/jeuneafrique.js'
 
 const router = express.Router()
 
@@ -175,6 +177,38 @@ router.post('/refresh/autonews', async (req, res) => {
     res.json({ ok: true, source: 'autonews', imported: Math.min(items.length, limit), posts })
   } catch (e) {
     res.status(500).json({ ok: false, source: 'autonews', error: 'failed to import' })
+  }
+})
+
+router.post('/refresh/jeuneafrique', async (req, res) => {
+  try {
+    const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
+    const limit = 24
+    const imageUrl = '/jeuneafrique.png'
+    for (const it of items.slice(0, limit)) {
+      const existing = await Post.findOne({ url: it.url })
+      if (existing) {
+        existing.title = it.title
+        existing.type = 'Magazine'
+        existing.author = 'JeuneAfrique'
+        existing.description = "Un article de JeuneAfrique !"
+        existing.imageUrl = imageUrl
+        await existing.save()
+      } else {
+        await Post.create({
+          title: it.title,
+          type: 'Magazine',
+          author: 'JeuneAfrique',
+          description: "Un article de JeuneAfrique !",
+          imageUrl,
+          url: it.url,
+        })
+      }
+    }
+    const posts = await Post.find({}).sort({ createdAt: -1 })
+    res.json({ ok: true, source: 'jeuneafrique', imported: Math.min(items.length, limit), posts })
+  } catch (e) {
+    res.status(500).json({ ok: false, source: 'jeuneafrique', error: 'failed to import' })
   }
 })
 
