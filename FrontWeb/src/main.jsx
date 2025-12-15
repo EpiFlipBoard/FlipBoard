@@ -9,6 +9,11 @@ import Favorites from './pages/Favorites.jsx'
 import Search from './pages/Search.jsx'
 import Admin from './pages/Admin.jsx'
 import Newsletter from './pages/Newsletter.jsx'
+import Profile from './pages/Profile.jsx'
+import EditCollection from './pages/EditCollection.jsx'
+import Follows from './pages/Follows.jsx'
+import Statistics from './pages/Statistics.jsx'
+import Settings from './pages/Settings.jsx'
 
 const router = createBrowserRouter([
   {
@@ -21,6 +26,11 @@ const router = createBrowserRouter([
       { path: 'search', element: <Search /> },
       { path: 'admin', element: <Admin /> },
       { path: 'newsletter', element: <Newsletter /> },
+      { path: 'profile', element: <Profile /> },
+      { path: 'collections/:id/edit', element: <EditCollection /> },
+      { path: 'follows', element: <Follows /> },
+      { path: 'statistics', element: <Statistics /> },
+      { path: 'settings', element: <Settings /> },
       { path: 'login', element: <Home /> },
       { path: 'signup', element: <Home /> },
     ],

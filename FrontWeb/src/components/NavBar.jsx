@@ -19,6 +19,7 @@ function NavBar() {
   const [regLoading, setRegLoading] = useState(false)
   const [regError, setRegError] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const [notifOpen, setNotifOpen] = useState(false)
   const user = getUser()
   useEffect(() => {
     if (location.pathname === '/login') {
@@ -39,7 +40,7 @@ function NavBar() {
     const token = params.get('token')
     async function handleToken() {
       if (!token) return
-      const res = await fetch('http://localhost:4001/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
+      const res = await fetch('http://localhost:4000/api/auth/me', { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
       if (res.ok && data?.user) {
         setAuth(token, data.user)
@@ -56,7 +57,7 @@ function NavBar() {
     setLoginError('')
     setLoginLoading(true)
     try {
-      const res = await fetch('http://localhost:4001/api/auth/login', {
+      const res = await fetch('http://localhost:4000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail.toLowerCase(), password: loginPassword })
@@ -79,7 +80,7 @@ function NavBar() {
     setRegError('')
     setRegLoading(true)
     try {
-      const res = await fetch('http://localhost:4001/api/auth/register', {
+      const res = await fetch('http://localhost:4000/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: regName, email: regEmail.toLowerCase(), password: regPassword })
@@ -97,14 +98,16 @@ function NavBar() {
     }
   }
   return (
-    <header className="sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue">
+    <header className={`sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue ${user ? '' : 'py-3'}`}>
       <div className="mr-10 flex items-center justify-between">
         {user ? (
           <div className="flex items-center gap-6">
             <Link to="/" className="flex items-center gap-2">
               <img src="/logo.png" alt="Logo" className="h-16 w-16" />
             </Link>
-            <button className="nav-link">For you</button>
+            <Link to="/" className="flex items-center gap-2">
+              <button className="nav-link">For you</button>
+            </Link>
             <button className="nav-link">Today's edition</button>
             <div className="relative">
               <button className="nav-link" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
@@ -135,10 +138,8 @@ function NavBar() {
                 />
               </div>
               <button className="btn btn-primary">Post a magazine</button>
-              <button className="nav-link" title="Apps">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h8v8H3zm10 0h8v8h-8zM3 13h8v8H3zm10 8v-8h8v8z"/></svg>
-              </button>
-              <button className="nav-link" title="Notifications">
+              <button className="nav-link" title="Follows" onClick={() => navigate('/follows')}>Follows</button>
+              <button className="nav-link" title="Notifications" onClick={() => setNotifOpen(true)}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V9c0-3.07-1.63-5.64-4.5-6.32V2h-3v.68C7.63 3.36 6 5.92 6 9v7l-2 2v1h16v-1l-2-2z"/></svg>
               </button>
               <div className="relative">
@@ -146,11 +147,16 @@ function NavBar() {
                   <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
                 </button>
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-44 bg-white border rounded shadow p-3">
-                    <div className="text-sm mb-2">Disconnect?</div>
-                    <div className="flex gap-2">
-                      <button className="btn btn-muted" onClick={() => setProfileOpen(false)}>Cancel</button>
-                      <button className="btn btn-primary" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Disconnect</button>
+                  <div className="absolute right-0 mt-2 w-64 bg-white border rounded shadow p-2">
+                    <div className="flex flex-col">
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>Account</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>Statistics</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>Settings</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center justify-between">
+                        <span>Dark Mode</span>
+                        <span className="text-red-500">✓</span>
+                      </button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Disconnect</button>
                     </div>
                   </div>
                 )}
@@ -203,12 +209,12 @@ function NavBar() {
                     <button
                       type="button"
                       className="btn btn-muted"
-                      onClick={() => (window.location.href = `http://localhost:4001/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin)}`)}
+                      onClick={() => (window.location.href = `http://localhost:4000/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Google</button>
                     <button
                       type="button"
                       className="btn btn-muted"
-                      onClick={() => (window.location.href = `http://localhost:4001/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
+                      onClick={() => (window.location.href = `http://localhost:4000/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Facebook</button>
                   </div>
                   <input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="Email" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
@@ -230,6 +236,17 @@ function NavBar() {
               <p className="text-xs text-white/50 mt-6">En continuant, vous acceptez les Conditions d'utilisation et Politique de confidentialité.</p>
             </div>
           </div>
+        </div>
+      </div>
+    )}
+    {notifOpen && (
+      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="bg-brand-dark text-white rounded-xl shadow-magazine w-full max-w-2xl overflow-hidden">
+          <div className="flex items-center justify-between p-4">
+            <h2 className="text-2xl font-extrabold">NOTIFICATIONS</h2>
+            <button className="text-white/80 hover:text-white" onClick={() => setNotifOpen(false)}>✕</button>
+          </div>
+          <div className="p-6 min-h-[300px]"></div>
         </div>
       </div>
     )}

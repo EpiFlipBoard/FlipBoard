@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
-import { getToken } from '../lib/auth.js'
+import { getToken, getUser } from '../lib/auth.js'
 
 const sample = []
 
@@ -10,6 +10,7 @@ function Home() {
   const favIds = useMemo(() => new Set(favorites.map(a => a.id)), [favorites])
   const categories = ['Explore Spotlight','Inédit','Actualités','Local','Économie','Tech et sciences','Sport']
   const [selected, setSelected] = useState('Explore Spotlight')
+  const user = getUser()
 
   const items = useMemo(() => {
     if (selected === 'Explore Spotlight') return sample
@@ -43,11 +44,11 @@ function Home() {
           <h1 className="text-6xl md:text-6xl font-extrabold leading-tight">RESTEZ INFORMÉS<br/>TROUVEZ DE L'INSPIRATION</h1>
           <div className="h-3 bg-brand-blue w-full mx-auto my-4" />
           <p className="text-white/80 text-2xl">Histoires sélectionnées pour vous</p>
-          <Link to="/signup" className="mt-12 mb-20 inline-flex btn btn-primary text-lg px-8 py-4">Créer un compte</Link>
+          {!user && <Link to="/signup" className="mt-12 mb-20 inline-flex btn btn-primary text-lg px-8 py-4">Créer un compte</Link>}
         </div>
       </section>
 
-      <div className="max-w-6xl mx-auto px-4">
+      <div className={`max-w-6xl mx-auto px-4${user ? ' mt-10' : ''}`}>
         <div className="flex flex-wrap items-center justify-center gap-20 py-6">
           {categories.map(cat => (
             <button
@@ -76,7 +77,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      const res = await fetch(`http://localhost:4001/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const res = await fetch(`http://localhost:4000/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
                       const data = await res.json()
                       if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
                     }}
@@ -92,7 +93,7 @@ function Home() {
                       const text = prompt('Votre commentaire:') || ''
                       if (!text.trim()) return
                       const token = getToken()
-                      await fetch(`http://localhost:4001/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
+                      await fetch(`http://localhost:4000/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Comments"
@@ -103,7 +104,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      await fetch(`http://localhost:4001/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await fetch(`http://localhost:4000/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"

@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
+import collectionsRouter from './routes/collections.js'
 import Post from './models/Post.js'
 
 import { parseAutonews } from '../scripts/parse/autonews.js'
@@ -42,6 +43,7 @@ app.use(express.json())
 app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
 app.use('/api/posts', postsRouter)
+app.use('/api/collections', collectionsRouter)
 
 async function importJeuneAfriqueBatch() {
   try {
