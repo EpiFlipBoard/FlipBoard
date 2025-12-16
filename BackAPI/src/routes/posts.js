@@ -7,6 +7,7 @@ import auth from '../middleware/auth.js'
 import { getPageScrap } from '../../scripts/saveRenderedHTML.js'
 import { parseAutonews } from '../../scripts/parse/autonews.js'
 import { parseJeuneAfrique } from '../../scripts/parse/jeuneafrique.js'
+import { fetchAndSaveArticles } from '../../apis/aggregator.js'
 
 const router = express.Router()
 
@@ -284,6 +285,67 @@ router.post('/:id/collect', auth, async (req, res) => {
     await collection.save()
   }
   res.json({ added: true, collectionId: collection._id })
+})
+
+// Nouvelle route pour récupérer des articles via APIs
+router.post('/fetch-latest', async (req, res) => {
+  try {
+    const apiKeys = {
+      newsapi: process.env.NEWSAPI_KEY,
+      guardian: process.env.GUARDIAN_API_KEY,
+      nytimes: process.env.NYTIMES_API_KEY
+    }
+
+    const options = {
+      sources: ['rss'], // Par défaut RSS (gratuit)
+      pageSize: 20
+    }
+
+    // Si des clés API sont fournies, ajouter les sources
+    if (apiKeys.newsapi) options.sources.push('newsapi')
+    if (apiKeys.guardian) options.sources.push('guardian')
+    if (apiKeys.nytimes) options.sources.push('nytimes')
+
+    const result = await fetchAndSaveArticles(Post, apiKeys, options)
+    
+    res.json({
+      success: true,
+      message: `${result.saved} nouveaux articles ajoutés, ${result.updated} mis à jour`,
+      ...result
+    })
+  } catch (error) {
+    console.error('Error fetching articles:', error)
+    res.status(500).json({ error: 'Failed to fetch articles', details: error.message })
+  }
+})
+
+// Route pour récupérer des articles avec des paramètres personnalisés
+router.post('/fetch-custom', async (req, res) => {
+  try {
+    const { sources, pageSize, category, query } = req.body
+
+    const apiKeys = {
+      newsapi: process.env.NEWSAPI_KEY,
+      guardian: process.env.GUARDIAN_API_KEY,
+      nytimes: process.env.NYTIMES_API_KEY
+    }
+
+    const result = await fetchAndSaveArticles(Post, apiKeys, {
+      sources: sources || ['rss'],
+      pageSize: pageSize || 10,
+      category,
+      query
+    })
+    
+    res.json({
+      success: true,
+      message: `${result.saved} nouveaux articles ajoutés, ${result.updated} mis à jour`,
+      ...result
+    })
+  } catch (error) {
+    console.error('Error fetching articles:', error)
+    res.status(500).json({ error: 'Failed to fetch articles', details: error.message })
+  }
 })
 
 export default router
