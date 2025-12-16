@@ -27,7 +27,7 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 | Feature                         | Description                                               | Priority |
 | ------------------------------- | --------------------------------------------------------- | -------- |
-| Authentication                  | Login via email/password and OAuth (Google)     | High     |
+| Authentication                  | Login via email/password and OAuth (Google/Meta)          | High     |
 | Content Ingestion               | Automatic collection of RSS feeds and HTML parsing        | High     |
 | Article Reading                 | Stylized display (magazine layout) with smooth pagination | High     |
 | Category/Topic Filtering        | Filter content by category or tags                        | Medium   |
@@ -49,26 +49,34 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 ### 3.1 Tech Stack
 
-* **Frontend:** React + Next.js (TypeScript) + Tailwind CSS
-* **Backend:** NestJS (TypeScript) with REST/GraphQL APIs
-* **Database:** PostgreSQL + Redis (cache) + Elasticsearch (search)
-* **File Storage:** S3-compatible (MinIO or AWS S3)
-* **CI/CD:** GitHub Actions + Docker + Kubernetes (staging & production)
-* **Infrastructure-as-Code:** Terraform
-* **Monitoring:** Prometheus + Grafana + Sentry
+* **Frontend:** React + Vite + React Router + TailwindCSS
+* **Backend:** Express.js with REST APIs + Mongoose ODM
+* **Database:** MongoDB (Local development → MongoDB Atlas for production)
+* **Content Sources:** RSS Feeds (Le Monde, Le Figaro, France Info, RFI, L'Express) + Optional APIs (NewsAPI, Guardian, NY Times)
+* **Web Scraping:** Puppeteer for JavaScript-heavy sites (Autonews, Jeune Afrique)
+* **CI/CD:** GitHub Actions
+* **Hosting:** Vercel (Frontend + Backend)
 
-### 3.2 Performance
+### 3.2 Security
 
-* API feed response time: p95 < 300ms
-* Ingestion: minimum 10,000 articles/day in batch
-* Uptime goal: 99.9%
-
-### 3.3 Security
-
-* Passwords hashed with bcrypt or Argon2
-* HTTPS mandatory (Let's Encrypt or managed cert)
-* GDPR compliance: account deletion and data removal
-* Secrets managed via Vault / AWS Secrets Manager
+* **Authentication:**
+  - Passwords hashed with bcrypt (10 rounds)
+  - JWT tokens (7-day expiration)
+  - OAuth 2.0 (Google & Facebook integration)
+* **API Security:**
+  - JWT verification middleware for protected routes
+  - CORS configured with whitelist (localhost + production domains)
+  - Bearer token authentication header
+* **Transport Security:**
+  - HTTPS mandatory in production (Vercel automatically managed)
+  - Secure environment variables (.env excluded from Git)
+* **Data Protection:**
+  - MongoDB connection secured with credentials
+  - API keys stored in environment variables only
+  - No sensitive data in frontend code
+* **GDPR Compliance:**
+  - User account deletion capability
+  - Data removal on request
 
 ---
 
@@ -76,23 +84,26 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 ### 4.1 Components
 
-1. **Frontend (Next.js):** Responsive UI, SSR/ISR for SEO, integrates API.
-2. **API Gateway (NestJS):** Exposes endpoints for users, feed, favorites.
-3. **Ingestion Service:** Microservice dedicated to fetching and parsing feeds.
-4. **Message Queue:** RabbitMQ or Kafka to orchestrate ingestion.
-5. **Database & Search:** PostgreSQL, Elasticsearch.
-6. **Storage:** MinIO / S3 for images and archived articles.
-7. **Monitoring & Observability:** Prometheus, Grafana, Loki.
+1. **Frontend (React + Vite):** 
+   - Responsive SPA with React Router
+   - TailwindCSS for styling
+   - Pages: Home, Profile, Favorites, Settings, Admin, Statistics, Newsletter
+   - Components: NavBar with auth modals
 
-### 4.2 Conceptual Diagram
+2. **Backend API (Express.js):**
+   - RESTful endpoints for auth, posts, collections
+   - JWT authentication + OAuth (Google, Facebook)
+   - Mongoose for MongoDB interactions
+   - CORS configuration fMongoDB
 
-```
-[RSS/APIs Sources] → [Ingestion Worker] → [PostgreSQL + Elasticsearch]
-                                      ↓
-                                [NestJS API]
-                                      ↓
-                                [Next.js Frontend]
-```
+4. **Database (MongoDB):**
+   - Local: mongodb://localhost:27017/myflip
+   - Production: MongoDB Atlas (managed cloud)
+   - Collections: users, posts, comments, collections
+
+5. **Deployment:**
+   - Frontend & Backend: Vercel
+   - Database: MongoDB Atlas (free tier M0)
 
 ---
 
@@ -100,21 +111,13 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 **Main Tables:**
 
-* `users(id, email, password_hash, prefs jsonb, created_at)`
-* `sources(id, url, category, enabled, last_fetch)`
-* `articles(id, source_id, title, summary, url, content_html, published_at, meta jsonb)`
-* `favorites(user_id, article_id, created_at)`
-* `user_activity(user_id, event_type, data jsonb, created_at)`
-
----
+* users(id, email, password_hash, prefs jsonb, created_at)
+* sources(id, url, category, enabled, last_fetch)
+* articles(id, source_id, title, summary, url, content_html, published_at, meta jsonb)
+* favorites(user_id, article_id, created_at)
+* user_activity(user_id, event_type, data jsonb, created_at)
 
 ## 6. Project Workflow & Methodology
-
-### 6.1 Management Methodology
-
-* **Agile (Scrum)** — 2-week sprints, daily standups, retrospectives.
-* **Tools:** Jira / Linear for project management, Notion / Confluence for documentation.
-* **Communication:** Slack with CI/CD and Sentry integrations.
 
 ### 6.2 Development Tools
 
@@ -125,10 +128,8 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 ### 6.3 CI/CD Workflow
 
-1. Push to branch → lint + test + build.
-2. Merge PR → build Docker image and push to registry.
-3. Auto-deploy to staging.
-4. Manual approval before production release.
+1. Push to branch -> lint + test + build.
+2. Auto-deploy with Vercel.
 
 ---
 
@@ -142,48 +143,12 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 | E2E           | Playwright            | Simulate real user workflows         |
 | Load / Stress | k6 / Locust           | Validate performance and scalability |
 
-Target: **≥ 80% coverage** for critical modules (API, ingestion, authentication).
-
 ---
 
-## 8. Key Performance Indicators (KPIs)
+## 8. Expected Deliverables
 
-* API error rate < 1%
-* Average latency < 200ms (feed endpoint)
-* CI build time < 5 minutes
-* Staging deployment < 3 minutes
-* Availability: 99.9%
+* Documented source code (frontend, backend)
+* GitHub Actions CI/CD
+* Technical documentation
 
----
-
-## 9. Project Timeline
-
-| Phase                     | Duration | Objectives                             |
-| ------------------------- | -------- | -------------------------------------- |
-| Phase 0 — Discovery       | 2 weeks  | Design, scope, architecture definition |
-| Phase 1 — MVP             | 10 weeks | Auth, feed, favorites, CI deployment   |
-| Phase 2 — Scalability     | 6 weeks  | Monitoring, search, caching            |
-| Phase 3 — Recommendations | 8 weeks  | ML algorithms, personalization         |
-
----
-
-## 10. Expected Deliverables
-
-* Documented source code (frontend, backend, ingestion)
-* API documentation (Swagger / OpenAPI)
-* Terraform infrastructure (staging + prod)
-* Docker and docker-compose files
-* GitHub Actions CI/CD scripts
-* Automated test suites
-* Technical documentation (Docusaurus or MkDocs)
-
----
-
-## 11. Annexes
-
-* **Competitive Benchmark:** Flipboard, Feedly, Inoreader, Pocket, SmartNews.
-* **Design System:** color palette, typography, UI components (Figma).
-* **User Stories:** detailed per sprint (e.g., “As a user, I want to save an article to read it later.”)
-
----
 
