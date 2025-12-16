@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getUser, getToken } from '../lib/auth.js'
 
 function Profile() {
   const user = getUser()
+  const navigate = useNavigate()
   const [collections, setCollections] = useState([])
   async function load() {
     const token = getToken()
@@ -35,7 +37,11 @@ function Profile() {
       </div>
       <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {collections.map(c => (
-          <div key={c._id} className="relative card h-40 p-0">
+          <div 
+            key={c._id} 
+            className="relative card h-40 p-0 hover:bg-gray-800 cursor-pointer transition-colors"
+            onClick={() => navigate(`/collections/${c._id}`)}
+          >
             <div className="px-4 pt-3">
               <div className="card-title">{c.name}</div>
             </div>
@@ -45,9 +51,13 @@ function Profile() {
               )}
             </div>
             <div className="absolute bottom-3 right-3">
-              <a href={`/collections/${c._id}/edit`} className="inline-flex p-2 rounded hover:bg-gray-100" title="Modifier">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" className="text-gray-700"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
-              </a>
+              <div 
+                onClick={(e) => { e.stopPropagation(); navigate(`/collections/${c._id}/edit`) }} 
+                className="inline-flex p-2 rounded hover:bg-gray-700 text-gray-400 hover:text-white" 
+                title="Modifier"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1.003 1.003 0 000-1.42l-2.34-2.34a1.003 1.003 0 00-1.42 0l-1.83 1.83 3.75 3.75 1.84-1.82z"/></svg>
+              </div>
             </div>
           </div>
         ))}

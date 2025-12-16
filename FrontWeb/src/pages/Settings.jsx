@@ -54,12 +54,7 @@ function Settings() {
             <label className="block text-sm mb-1">Avatar</label>
             <input type="file" className="text-white/80" />
           </div>
-          <h3 className="text-lg font-extrabold mt-6">PARAMÈTRES DU COMPTE</h3>
-          <div className="space-y-2 text-white/80">
-            <div>Vos choix pour les données personnelles</div>
-            <div>Changer le mot de passe</div>
-            <div>Supprimer le compte</div>
-          </div>
+          
           <button className="btn btn-primary mt-4">Enregistrer</button>
         </div>
       )}
