@@ -17,9 +17,22 @@ router.post('/', auth, async (req, res) => {
 })
 
 router.get('/:id', auth, async (req, res) => {
-  const c = await Collection.findById(req.params.id)
+  const c = await Collection.findById(req.params.id).populate('posts')
   if (!c || String(c.userId) !== String(req.user._id)) return res.status(404).json({ error: 'not found' })
   res.json({ collection: c })
+})
+
+router.post('/:id/posts', auth, async (req, res) => {
+  const c = await Collection.findById(req.params.id)
+  if (!c || String(c.userId) !== String(req.user._id)) return res.status(404).json({ error: 'not found' })
+  const { postId } = req.body
+  if (!postId) return res.status(400).json({ error: 'postId required' })
+  if (!c.posts.includes(postId)) {
+    c.posts.push(postId)
+    await c.save()
+  }
+  const populated = await Collection.findById(c._id).populate('posts')
+  res.json({ collection: populated })
 })
 
 router.patch('/:id', auth, async (req, res) => {

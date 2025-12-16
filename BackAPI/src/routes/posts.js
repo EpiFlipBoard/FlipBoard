@@ -10,6 +10,13 @@ import { parseJeuneAfrique } from '../../scripts/parse/jeuneafrique.js'
 
 const router = express.Router()
 
+router.get('/search', async (req, res) => {
+  const { q } = req.query
+  if (!q) return res.json({ posts: [] })
+  const posts = await Post.find({ title: { $regex: q, $options: 'i' } }).limit(20)
+  res.json({ posts })
+})
+
 function hostname(url) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
 }
