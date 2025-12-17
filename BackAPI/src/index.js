@@ -113,15 +113,39 @@ async function importAutonewsBatch() {
   }
 }
 
-mongoose.connect(mongoUri).then(async () => {
-  app.listen(port, () => {
-    console.log(`API on http://localhost:${port}`)
+// Initialize DB connection
+let isConnected = false
+
+async function connectDB() {
+  if (isConnected) return
+  try {
+    await mongoose.connect(mongoUri)
+    isConnected = true
+    console.log('MongoDB connected')
+    
+    // Import data on first connection
+    await importAutonewsBatch()
+    await importJeuneAfriqueBatch()
+  } catch (err) {
+    console.error('Mongo connect error', err)
+  }
+}
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  connectDB().then(() => {
+    app.listen(port, () => {
+      console.log(`API on http://localhost:${port}`)
+    })
+    setInterval(importAutonewsBatch, 10 * 60 * 1000)
+    setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
   })
-  await importAutonewsBatch()
-  await importJeuneAfriqueBatch()
-  setInterval(importAutonewsBatch, 10 * 60 * 1000)
-  setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
-}).catch(err => {
-  console.error('Mongo connect error', err)
-  process.exit(1)
+}
+
+// For Vercel serverless
+app.use(async (req, res, next) => {
+  await connectDB()
+  next()
 })
+
+export default app
