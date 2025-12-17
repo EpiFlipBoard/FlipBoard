@@ -40,6 +40,10 @@ app.use(cors({
 }))
 app.use(express.json())
 
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'FlipBoard API is running' })
+})
+
 app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
 app.use('/api/posts', postsRouter)
