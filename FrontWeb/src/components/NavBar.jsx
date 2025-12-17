@@ -137,7 +137,7 @@ function NavBar() {
                   className="search-input"
                 />
               </div>
-              <button className="btn btn-primary">Post a magazine</button>
+              <button className="btn btn-primary" onClick={() => navigate('/create')}>Create an article</button>
               <button className="nav-link" title="Follows" onClick={() => navigate('/follows')}>Follows</button>
               <button className="nav-link" title="Notifications" onClick={() => setNotifOpen(true)}>
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V9c0-3.07-1.63-5.64-4.5-6.32V2h-3v.68C7.63 3.36 6 5.92 6 9v7l-2 2v1h16v-1l-2-2z"/></svg>

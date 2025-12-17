@@ -15,6 +15,7 @@ import CollectionDetail from './pages/CollectionDetail.jsx'
 import Follows from './pages/Follows.jsx'
 import Statistics from './pages/Statistics.jsx'
 import Settings from './pages/Settings.jsx'
+import CreateArticle from './pages/CreateArticle.jsx'
 
 const router = createBrowserRouter([
   {
@@ -30,6 +31,7 @@ const router = createBrowserRouter([
       { path: 'profile', element: <Profile /> },
       { path: 'collections/:id', element: <CollectionDetail /> },
       { path: 'collections/:id/edit', element: <EditCollection /> },
+      { path: 'create', element: <CreateArticle /> },
       { path: 'follows', element: <Follows /> },
       { path: 'statistics', element: <Statistics /> },
       { path: 'settings', element: <Settings /> },

@@ -246,6 +246,31 @@ router.post('/import', auth, async (req, res) => {
   res.json({ post })
 })
 
+router.post('/create', auth, async (req, res) => {
+  const { title, content, imageUrl, description } = req.body || {}
+  if (!title || !content) return res.status(400).json({ error: 'title and content required' })
+  const post = await Post.create({
+    title,
+    content,
+    imageUrl: imageUrl || '',
+    description: description || content.slice(0, 150) + '...',
+    type: 'Article',
+    author: req.user.name || 'User',
+    url: '' // Empty URL signifies internal article
+  })
+  res.json({ post })
+})
+
+router.get('/:id', async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+    if (!post) return res.status(404).json({ error: 'not found' })
+    res.json({ post })
+  } catch {
+    res.status(404).json({ error: 'not found' })
+  }
+})
+
 router.post('/:id/like', auth, async (req, res) => {
   const { id } = req.params
   const userId = req.user._id

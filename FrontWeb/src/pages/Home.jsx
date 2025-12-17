@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser } from '../lib/auth.js'
 
 const sample = []
 
 function Home() {
+  const navigate = useNavigate()
   const [favorites, setFavorites] = useState(getFavorites())
   const favIds = useMemo(() => new Set(favorites.map(a => a.id)), [favorites])
   const categories = ['Explore Spotlight','Inédit','Actualités','Local','Économie','Tech et sciences','Sport']
@@ -45,6 +46,7 @@ function Home() {
           <div className="h-3 bg-brand-blue w-full mx-auto my-4" />
           <p className="text-white/80 text-2xl">Histoires sélectionnées pour vous</p>
           {!user && <Link to="/signup" className="mt-12 mb-20 inline-flex btn btn-primary text-lg px-8 py-4">Créer un compte</Link>}
+          {user && <Link to="/create" className="mt-8 inline-flex btn btn-primary text-lg px-8 py-3">Créer un article</Link>}
         </div>
       </section>
 
@@ -64,7 +66,10 @@ function Home() {
             <article
               key={a.id}
               className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white"
-              onClick={() => { if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') }}
+              onClick={() => { 
+                if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') 
+                else navigate(`/article/${a.id}`)
+              }}
             >
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
               <div className="p-4">

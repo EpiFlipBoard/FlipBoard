@@ -7,6 +7,7 @@ const postSchema = new mongoose.Schema({
   description: { type: String, default: '' },
   imageUrl: { type: String, default: '' },
   url: { type: String, default: '' },
+  content: { type: String, default: '' }, // For internal articles
   likes: { type: Number, default: 0 },
   likedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
 }, { timestamps: true })

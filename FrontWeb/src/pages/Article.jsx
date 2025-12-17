@@ -1,19 +1,47 @@
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 
 function Article() {
   const { id } = useParams()
+  const [post, setPost] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await fetch(`http://localhost:4000/api/posts/${id}`)
+        const data = await res.json()
+        if (res.ok) setPost(data.post)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [id])
+
+  if (loading) return <div className="p-10 text-center text-white">Chargement...</div>
+  if (!post) return <div className="p-10 text-center text-white">Article non trouvé</div>
+
   return (
-    <div>
-      <div className="h-40 rounded-xl bg-gradient-to-br from-brand-red to-pink-600 mb-6" />
-      <div className="card p-6">
-        <h1>Article {id}</h1>
-        <p className="mt-3 text-gray-700">
-          This is a placeholder article view. Integrate real content ingestion
-          and rendering to replace this.
-        </p>
-        <div className="mt-4">
-          <Link to="/" className="btn btn-muted">Back</Link>
+    <div className="max-w-4xl mx-auto py-10 px-4 text-white">
+      {post.imageUrl && (
+        <div className="h-64 md:h-96 w-full rounded-xl overflow-hidden mb-8 shadow-2xl">
+          <img src={post.imageUrl} alt={post.title} className="w-full h-full object-cover" />
         </div>
+      )}
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight break-words">{post.title}</h1>
+      <div className="flex items-center gap-4 text-gray-400 mb-8 border-b border-gray-800 pb-8">
+        <span className="font-semibold text-brand-red">{post.author}</span>
+        <span>•</span>
+        <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+      </div>
+      <div className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
+        {post.content}
+      </div>
+      <div className="mt-12 pt-8 border-t border-gray-800">
+        <Link to="/" className="btn btn-muted hover:text-white transition-colors">Retour à l'accueil</Link>
       </div>
     </div>
   )
