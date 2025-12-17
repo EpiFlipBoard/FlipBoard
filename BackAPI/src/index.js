@@ -153,16 +153,22 @@ async function connectDB() {
   
   connectionPromise = (async () => {
     try {
+      // Disable buffering to prevent timeout issues in serverless
+      mongoose.set('bufferCommands', false)
+      mongoose.set('bufferTimeoutMS', 5000)
+      
       await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         maxPoolSize: 10,
+        minPoolSize: 1,
       })
       isConnected = true
       console.log('✅ MongoDB connected successfully!')
       
       // Only import data in development (Puppeteer doesn't work on Vercel)
       if (process.env.NODE_ENV !== 'production') {
+        console.log('🔄 Running initial data import (dev mode)')
         await importAutonewsBatch()
         await importJeuneAfriqueBatch()
       }
@@ -172,6 +178,7 @@ async function connectDB() {
       console.error('❌ MongoDB connection failed:', err.message)
       console.error('❌ Full error:', err)
       connectionPromise = null
+      isConnected = false
       return false
     }
   })()
