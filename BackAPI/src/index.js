@@ -157,13 +157,30 @@ async function connectDB() {
   connectionPromise = (async () => {
     try {
       await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 5000,
+        serverSelectionTimeoutMS: 10000,
         socketTimeoutMS: 45000,
         maxPoolSize: 10,
-        minPoolSize: 1,
+        minPoolSize: 2,
       })
+      
+      // CRITICAL: Wait for connection to be REALLY ready
+      console.log('⏳ Waiting for connection readyState...')
+      let retries = 0
+      while (mongoose.connection.readyState !== 1 && retries < 20) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        retries++
+      }
+      
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
+      }
+      
+      // Test with a real ping
+      console.log('🏓 Testing connection with ping...')
+      await mongoose.connection.db.admin().ping()
+      
       isConnected = true
-      console.log('✅ MongoDB connected successfully!')
+      console.log('✅ MongoDB connected and verified!')
       
       // Only import data in development (Puppeteer doesn't work on Vercel)
       if (process.env.NODE_ENV !== 'production') {
