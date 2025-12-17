@@ -9,7 +9,7 @@ function Profile() {
   async function load() {
     const token = getToken()
     if (!token) return
-    const res = await fetch('http://localhost:4000/api/collections/me', { headers: { Authorization: `Bearer ${token}` } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collections/me`, { headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
     setCollections(data.collections || [])
   }
@@ -19,7 +19,7 @@ function Profile() {
     if (!name.trim()) return
     const isPrivate = window.confirm('Souhaitez-vous créer une collection privée ?')
     const token = getToken()
-    const res = await fetch('http://localhost:4000/api/collections', { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name, isPrivate }) })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collections`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ name, isPrivate }) })
     if (res.ok) load()
   }
   return (

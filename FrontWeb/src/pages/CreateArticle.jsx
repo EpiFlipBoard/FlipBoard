@@ -12,7 +12,7 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
     const token = getToken()
-    const res = await fetch('http://localhost:4000/api/posts/create', {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ title, description, content, imageUrl }),

@@ -9,7 +9,7 @@ function Article() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`http://localhost:4000/api/posts/${id}`)
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${id}`)
         const data = await res.json()
         if (res.ok) setPost(data.post)
       } catch (e) {

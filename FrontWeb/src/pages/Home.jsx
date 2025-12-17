@@ -21,7 +21,7 @@ function Home() {
   const [posts, setPosts] = useState([])
   useEffect(() => {
     async function load() {
-      const res = await fetch('http://localhost:4000/api/posts')
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts`)
       const data = await res.json()
       const mapped = (data.posts || []).map(p => ({
         id: p._id,
@@ -82,7 +82,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      const res = await fetch(`http://localhost:4000/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
                       const data = await res.json()
                       if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
                     }}
@@ -98,7 +98,7 @@ function Home() {
                       const text = prompt('Votre commentaire:') || ''
                       if (!text.trim()) return
                       const token = getToken()
-                      await fetch(`http://localhost:4000/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
+                      await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Comments"
@@ -109,7 +109,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      await fetch(`http://localhost:4000/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"

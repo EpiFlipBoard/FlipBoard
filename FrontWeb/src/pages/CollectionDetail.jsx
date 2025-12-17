@@ -11,7 +11,7 @@ function CollectionDetail() {
 
   async function load() {
     const token = getToken()
-    const res = await fetch(`http://localhost:4000/api/collections/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collections/${id}`, { headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
     if (res.ok) setCollection(data.collection)
   }
@@ -22,7 +22,7 @@ function CollectionDetail() {
     e.preventDefault()
     if (!query.trim()) return
     setIsSearching(true)
-    const res = await fetch(`http://localhost:4000/api/posts/search?q=${encodeURIComponent(query)}`)
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/search?q=${encodeURIComponent(query)}`)
     const data = await res.json()
     setResults(data.posts || [])
     setIsSearching(false)
@@ -30,7 +30,7 @@ function CollectionDetail() {
 
   async function addToCollection(postId) {
     const token = getToken()
-    const res = await fetch(`http://localhost:4000/api/collections/${id}/posts`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collections/${id}/posts`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ postId })
