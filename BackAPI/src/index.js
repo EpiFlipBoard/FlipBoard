@@ -122,20 +122,38 @@ async function importAutonewsBatch() {
 
 // Initialize DB connection
 let isConnected = false
+let connectionPromise = null
 
 async function connectDB() {
-  if (isConnected) return
-  try {
-    await mongoose.connect(mongoUri)
-    isConnected = true
-    console.log('MongoDB connected')
-    
-    // Import data on first connection
-    await importAutonewsBatch()
-    await importJeuneAfriqueBatch()
-  } catch (err) {
-    console.error('Mongo connect error', err)
-  }
+  if (isConnected) return true
+  
+  // If connection is already in progress, wait for it
+  if (connectionPromise) return connectionPromise
+  
+  connectionPromise = (async () => {
+    try {
+      await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+        socketTimeoutMS: 45000,
+      })
+      isConnected = true
+      console.log('✅ MongoDB connected')
+      
+      // Only import data in development (Puppeteer doesn't work on Vercel)
+      if (process.env.NODE_ENV !== 'production') {
+        await importAutonewsBatch()
+        await importJeuneAfriqueBatch()
+      }
+      
+      return true
+    } catch (err) {
+      console.error('❌ Mongo connect error:', err.message)
+      connectionPromise = null
+      return false
+    }
+  })()
+  
+  return connectionPromise
 }
 
 // For local development
@@ -149,9 +167,14 @@ if (process.env.NODE_ENV !== 'production') {
   })
 }
 
-// For Vercel serverless
+// For Vercel serverless - connect on first request
 app.use(async (req, res, next) => {
-  await connectDB()
+  if (!isConnected) {
+    const connected = await connectDB()
+    if (!connected) {
+      return res.status(503).json({ error: 'Database connection failed' })
+    }
+  }
   next()
 })
 
