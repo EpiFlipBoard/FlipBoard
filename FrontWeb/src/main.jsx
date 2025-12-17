@@ -11,6 +11,7 @@ import Admin from './pages/Admin.jsx'
 import Newsletter from './pages/Newsletter.jsx'
 import Profile from './pages/Profile.jsx'
 import EditCollection from './pages/EditCollection.jsx'
+import CollectionDetail from './pages/CollectionDetail.jsx'
 import Follows from './pages/Follows.jsx'
 import Statistics from './pages/Statistics.jsx'
 import Settings from './pages/Settings.jsx'
@@ -27,6 +28,7 @@ const router = createBrowserRouter([
       { path: 'admin', element: <Admin /> },
       { path: 'newsletter', element: <Newsletter /> },
       { path: 'profile', element: <Profile /> },
+      { path: 'collections/:id', element: <CollectionDetail /> },
       { path: 'collections/:id/edit', element: <EditCollection /> },
       { path: 'follows', element: <Follows /> },
       { path: 'statistics', element: <Statistics /> },
