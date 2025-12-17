@@ -108,16 +108,11 @@ async function refreshSources() {
       const sourceName = hostname(feed)
       console.log(`✅ Found ${items.length} items from ${sourceName}`)
       for (const it of items) {
-        let image = it.imageUrl
-        if (!image) {
-          const meta = await fetchOg(it.link)
-          image = meta.imageUrl
-        }
         const exists = await Post.findOne({ url: it.link })
         if (exists) {
           exists.title = it.title
           exists.description = it.description || exists.description
-          exists.imageUrl = image || exists.imageUrl
+          exists.imageUrl = it.imageUrl || exists.imageUrl
           exists.author = sourceName
           exists.type = 'Article'
           await exists.save()
@@ -127,7 +122,7 @@ async function refreshSources() {
             type: 'Article',
             author: sourceName,
             description: it.description,
-            imageUrl: image,
+            imageUrl: it.imageUrl || 'https://via.placeholder.com/800x400?text=Article',
             url: it.link,
           })
         }
@@ -148,9 +143,25 @@ async function ensureSeed() {
 }
 
 router.get('/', async (req, res) => {
-  await ensureSeed()
-  const posts = await Post.find({}).sort({ createdAt: -1 })
-  res.json({ posts })
+  try {
+    const posts = await Post.find({}).sort({ createdAt: -1 }).limit(100)
+    res.json({ posts })
+  } catch (err) {
+    console.error('Error fetching posts:', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+router.post('/fetch-latest', async (req, res) => {
+  try {
+    console.log('🚀 Manual fetch-latest triggered')
+    await refreshSources()
+    const posts = await Post.find({}).sort({ createdAt: -1 })
+    res.json({ ok: true, count: posts.length, posts })
+  } catch (err) {
+    console.error('Error in fetch-latest:', err)
+    res.status(500).json({ error: err.message })
+  }
 })
 
 router.post('/refresh', async (req, res) => {
