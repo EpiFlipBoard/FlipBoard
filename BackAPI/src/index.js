@@ -2,6 +2,11 @@ import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
+
+// CRITICAL: Configure mongoose BEFORE importing models to prevent buffering issues
+mongoose.set('bufferCommands', false)
+mongoose.set('strictQuery', false)
+
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
@@ -153,15 +158,12 @@ async function connectDB() {
   
   connectionPromise = (async () => {
     try {
-      // Disable buffering to prevent timeout issues in serverless
-      mongoose.set('bufferCommands', false)
-      mongoose.set('bufferTimeoutMS', 5000)
-      
       await mongoose.connect(mongoUri, {
         serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
         maxPoolSize: 10,
         minPoolSize: 1,
+        bufferCommands: false,
       })
       isConnected = true
       console.log('✅ MongoDB connected successfully!')
