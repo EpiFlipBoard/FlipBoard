@@ -135,18 +135,15 @@ function parseAtom(xml) {
 //   console.log('✅ RSS refresh complete!')
 // }
 
-// NOUVEAU CODE - Utilise l'aggregator avec les APIs
 async function refreshSources() {
-  console.log('📰 Starting to fetch articles from APIs...')
   try {
     const result = await fetchAndSaveArticles(Post, {}, { 
       sources: ['rss'], 
       pageSize: 20 
     })
-    console.log(`✅ Articles fetched: ${result.total}, saved: ${result.saved}, updated: ${result.updated}`)
     return result
   } catch (err) {
-    console.error('❌ Error in refreshSources:', err.message)
+    console.error('Error refreshing sources:', err.message)
     throw err
   }
 }
@@ -154,23 +151,13 @@ async function refreshSources() {
 let isSeedingInProgress = false
 
 async function ensureSeed() {
-  // Check if already has posts
   const count = await Post.countDocuments()
-  console.log(`📊 Found ${count} posts in database`)
-  if (count > 0) {
-    console.log('✅ Database already has articles, skipping seed')
-    return
-  }
+  if (count > 0) return
   
-  // Prevent multiple concurrent seeds
-  if (isSeedingInProgress) {
-    console.log('⏳ Seeding already in progress, skipping...')
-    return
-  }
+  if (isSeedingInProgress) return
   
   try {
     isSeedingInProgress = true
-    console.log('🌱 Database is empty, fetching articles from APIs...')
     await refreshSources()
   } finally {
     isSeedingInProgress = false
@@ -190,60 +177,13 @@ router.get('/', async (req, res) => {
   }
 })
 
-router.post('/seed-test', async (req, res) => {
-  try {
-    console.log('🌱 Creating test articles...')
-    
-    const testArticles = [
-      {
-        title: "Test Article 1 - Le Monde",
-        description: "Ceci est un article de test du Monde",
-        url: "https://lemonde.fr/test1",
-        imageUrl: "https://via.placeholder.com/800x400?text=Le+Monde",
-        author: "lemonde.fr",
-        type: "Article"
-      },
-      {
-        title: "Test Article 2 - Le Figaro",
-        description: "Ceci est un article de test du Figaro",
-        url: "https://lefigaro.fr/test2",
-        imageUrl: "https://via.placeholder.com/800x400?text=Le+Figaro",
-        author: "lefigaro.fr",
-        type: "Article"
-      },
-      {
-        title: "Test Article 3 - France Info",
-        description: "Ceci est un article de test de France Info",
-        url: "https://francetvinfo.fr/test3",
-        imageUrl: "https://via.placeholder.com/800x400?text=France+Info",
-        author: "francetvinfo.fr",
-        type: "Article"
-      }
-    ]
-    
-    for (const article of testArticles) {
-      await Post.create(article)
-      console.log(`✅ Created: ${article.title}`)
-    }
-    
-    const posts = await Post.find({})
-    console.log(`✅ Total posts in DB: ${posts.length}`)
-    
-    res.json({ ok: true, count: posts.length, posts })
-  } catch (err) {
-    console.error('Error in seed-test:', err)
-    res.status(500).json({ error: err.message, stack: err.stack })
-  }
-})
-
 router.post('/fetch-latest', async (req, res) => {
   try {
-    console.log('🚀 Manual fetch-latest triggered')
     await refreshSources()
     const posts = await Post.find({}).sort({ createdAt: -1 })
     res.json({ ok: true, count: posts.length, posts })
   } catch (err) {
-    console.error('Error in fetch-latest:', err)
+    console.error('Error fetching latest:', err)
     res.status(500).json({ error: err.message })
   }
 })
