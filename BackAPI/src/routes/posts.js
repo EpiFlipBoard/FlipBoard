@@ -95,50 +95,70 @@ function parseAtom(xml) {
   return entries.filter(i => i.title && i.link)
 }
 
+// ANCIEN CODE DE PARSING RSS - EN PAUSE
+// async function refreshSources() {
+//   const limit = 12
+//   console.log('📰 Starting to refresh RSS sources...')
+//   for (const feed of feedSources) {
+//     try {
+//       console.log(`🔄 Fetching ${feed}...`)
+//       const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+//       const xml = await res.text()
+//       const isAtom = /<feed[\s\S]*?>/i.test(xml)
+//       const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
+//       const sourceName = hostname(feed)
+//       console.log(`✅ Found ${items.length} items from ${sourceName}`)
+//       for (const it of items) {
+//         const exists = await Post.findOne({ url: it.link })
+//         if (exists) {
+//           exists.title = it.title
+//           exists.description = it.description || exists.description
+//           exists.imageUrl = it.imageUrl || exists.imageUrl
+//           exists.author = sourceName
+//           exists.type = 'Article'
+//           await exists.save()
+//         } else {
+//           await Post.create({
+//             title: it.title,
+//             type: 'Article',
+//             author: sourceName,
+//             description: it.description,
+//             imageUrl: it.imageUrl || 'https://via.placeholder.com/800x400?text=Article',
+//             url: it.link,
+//           })
+//         }
+//       }
+//     } catch (err) {
+//       console.error(`❌ Error fetching ${feed}:`, err.message)
+//     }
+//   }
+//   console.log('✅ RSS refresh complete!')
+// }
+
+// NOUVEAU CODE - Utilise l'aggregator avec les APIs
 async function refreshSources() {
-  const limit = 12
-  console.log('📰 Starting to refresh RSS sources...')
-  for (const feed of feedSources) {
-    try {
-      console.log(`🔄 Fetching ${feed}...`)
-      const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-      const xml = await res.text()
-      const isAtom = /<feed[\s\S]*?>/i.test(xml)
-      const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
-      const sourceName = hostname(feed)
-      console.log(`✅ Found ${items.length} items from ${sourceName}`)
-      for (const it of items) {
-        const exists = await Post.findOne({ url: it.link })
-        if (exists) {
-          exists.title = it.title
-          exists.description = it.description || exists.description
-          exists.imageUrl = it.imageUrl || exists.imageUrl
-          exists.author = sourceName
-          exists.type = 'Article'
-          await exists.save()
-        } else {
-          await Post.create({
-            title: it.title,
-            type: 'Article',
-            author: sourceName,
-            description: it.description,
-            imageUrl: it.imageUrl || 'https://via.placeholder.com/800x400?text=Article',
-            url: it.link,
-          })
-        }
-      }
-    } catch (err) {
-      console.error(`❌ Error fetching ${feed}:`, err.message)
-    }
+  console.log('📰 Starting to fetch articles from APIs...')
+  try {
+    const result = await fetchAndSaveArticles(Post, {}, { 
+      sources: ['rss'], 
+      pageSize: 20 
+    })
+    console.log(`✅ Articles fetched: ${result.total}, saved: ${result.saved}, updated: ${result.updated}`)
+    return result
+  } catch (err) {
+    console.error('❌ Error in refreshSources:', err.message)
+    throw err
   }
-  console.log('✅ RSS refresh complete!')
 }
 
 async function ensureSeed() {
   const count = await Post.countDocuments()
   console.log(`📊 Found ${count} posts in database`)
-  if (count > 0) return
-  console.log('🌱 Database is empty, seeding with RSS articles...')
+  if (count > 0) {
+    console.log('✅ Database already has articles, skipping seed')
+    return
+  }
+  console.log('🌱 Database is empty, fetching articles from APIs...')
   await refreshSources()
 }
 
