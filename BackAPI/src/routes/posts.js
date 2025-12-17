@@ -172,6 +172,52 @@ router.get('/', async (req, res) => {
   }
 })
 
+router.post('/seed-test', async (req, res) => {
+  try {
+    console.log('🌱 Creating test articles...')
+    
+    const testArticles = [
+      {
+        title: "Test Article 1 - Le Monde",
+        description: "Ceci est un article de test du Monde",
+        url: "https://lemonde.fr/test1",
+        imageUrl: "https://via.placeholder.com/800x400?text=Le+Monde",
+        author: "lemonde.fr",
+        type: "Article"
+      },
+      {
+        title: "Test Article 2 - Le Figaro",
+        description: "Ceci est un article de test du Figaro",
+        url: "https://lefigaro.fr/test2",
+        imageUrl: "https://via.placeholder.com/800x400?text=Le+Figaro",
+        author: "lefigaro.fr",
+        type: "Article"
+      },
+      {
+        title: "Test Article 3 - France Info",
+        description: "Ceci est un article de test de France Info",
+        url: "https://francetvinfo.fr/test3",
+        imageUrl: "https://via.placeholder.com/800x400?text=France+Info",
+        author: "francetvinfo.fr",
+        type: "Article"
+      }
+    ]
+    
+    for (const article of testArticles) {
+      await Post.create(article)
+      console.log(`✅ Created: ${article.title}`)
+    }
+    
+    const posts = await Post.find({})
+    console.log(`✅ Total posts in DB: ${posts.length}`)
+    
+    res.json({ ok: true, count: posts.length, posts })
+  } catch (err) {
+    console.error('Error in seed-test:', err)
+    res.status(500).json({ error: err.message, stack: err.stack })
+  }
+})
+
 router.post('/fetch-latest', async (req, res) => {
   try {
     console.log('🚀 Manual fetch-latest triggered')
