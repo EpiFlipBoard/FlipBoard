@@ -145,14 +145,18 @@ async function connectDB() {
   // If connection is already in progress, wait for it
   if (connectionPromise) return connectionPromise
   
+  console.log('🔌 Attempting MongoDB connection...')
+  console.log('📍 URI:', mongoUri ? `${mongoUri.substring(0, 30)}...` : 'NOT SET')
+  
   connectionPromise = (async () => {
     try {
       await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 5000, // Timeout after 5 seconds
+        serverSelectionTimeoutMS: 5000,
         socketTimeoutMS: 45000,
+        maxPoolSize: 10,
       })
       isConnected = true
-      console.log('✅ MongoDB connected')
+      console.log('✅ MongoDB connected successfully!')
       
       // Only import data in development (Puppeteer doesn't work on Vercel)
       if (process.env.NODE_ENV !== 'production') {
@@ -162,7 +166,8 @@ async function connectDB() {
       
       return true
     } catch (err) {
-      console.error('❌ Mongo connect error:', err.message)
+      console.error('❌ MongoDB connection failed:', err.message)
+      console.error('❌ Full error:', err)
       connectionPromise = null
       return false
     }
