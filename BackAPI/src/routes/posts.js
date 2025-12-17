@@ -47,16 +47,11 @@ async function fetchOg(url) {
 }
 
 const feedSources = [
-  'https://feeds.bbci.co.uk/news/world/rss.xml',
-  'https://feeds.reuters.com/reuters/worldNews',
-  'https://www.theverge.com/rss/index.xml',
-  'https://www.wired.com/feed/rss',
-  'https://www.theguardian.com/world/rss',
-  'https://feeds.arstechnica.com/arstechnica/index',
-  'https://techcrunch.com/feed/',
-  'https://www.engadget.com/rss.xml',
-  'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-  'https://www.cnet.com/rss/news/',
+  'https://www.lemonde.fr/rss/une.xml',
+  'https://www.lefigaro.fr/rss/figaro_actualites.xml',
+  'https://www.francetvinfo.fr/titres.rss',
+  'https://www.rfi.fr/fr/rss',
+  'https://www.lexpress.fr/arc/outboundfeeds/rss/alaune.xml',
 ]
 
 function stripTags(s) {
@@ -102,13 +97,16 @@ function parseAtom(xml) {
 
 async function refreshSources() {
   const limit = 12
+  console.log('📰 Starting to refresh RSS sources...')
   for (const feed of feedSources) {
     try {
+      console.log(`🔄 Fetching ${feed}...`)
       const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
       const xml = await res.text()
       const isAtom = /<feed[\s\S]*?>/i.test(xml)
       const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
       const sourceName = hostname(feed)
+      console.log(`✅ Found ${items.length} items from ${sourceName}`)
       for (const it of items) {
         let image = it.imageUrl
         if (!image) {
@@ -134,13 +132,18 @@ async function refreshSources() {
           })
         }
       }
-    } catch {}
+    } catch (err) {
+      console.error(`❌ Error fetching ${feed}:`, err.message)
+    }
   }
+  console.log('✅ RSS refresh complete!')
 }
 
 async function ensureSeed() {
   const count = await Post.countDocuments()
+  console.log(`📊 Found ${count} posts in database`)
   if (count > 0) return
+  console.log('🌱 Database is empty, seeding with RSS articles...')
   await refreshSources()
 }
 
