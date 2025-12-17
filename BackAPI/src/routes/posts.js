@@ -151,19 +151,37 @@ async function refreshSources() {
   }
 }
 
+let isSeedingInProgress = false
+
 async function ensureSeed() {
+  // Check if already has posts
   const count = await Post.countDocuments()
   console.log(`📊 Found ${count} posts in database`)
   if (count > 0) {
     console.log('✅ Database already has articles, skipping seed')
     return
   }
-  console.log('🌱 Database is empty, fetching articles from APIs...')
-  await refreshSources()
+  
+  // Prevent multiple concurrent seeds
+  if (isSeedingInProgress) {
+    console.log('⏳ Seeding already in progress, skipping...')
+    return
+  }
+  
+  try {
+    isSeedingInProgress = true
+    console.log('🌱 Database is empty, fetching articles from APIs...')
+    await refreshSources()
+  } finally {
+    isSeedingInProgress = false
+  }
 }
 
 router.get('/', async (req, res) => {
   try {
+    // Auto-seed if database is empty (only once)
+    await ensureSeed()
+    
     const posts = await Post.find({}).sort({ createdAt: -1 }).limit(100)
     res.json({ posts })
   } catch (err) {
