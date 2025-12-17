@@ -3,8 +3,6 @@ import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
-// CRITICAL: Configure mongoose BEFORE importing models to prevent buffering issues
-mongoose.set('bufferCommands', false)
 mongoose.set('strictQuery', false)
 
 import authRouter from './routes/auth.js'
@@ -163,7 +161,6 @@ async function connectDB() {
         socketTimeoutMS: 45000,
         maxPoolSize: 10,
         minPoolSize: 1,
-        bufferCommands: false,
       })
       isConnected = true
       console.log('✅ MongoDB connected successfully!')
