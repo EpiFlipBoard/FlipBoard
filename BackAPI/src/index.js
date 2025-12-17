@@ -16,29 +16,44 @@ dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 4001
-const corsOriginRaw = process.env.CORS_ORIGIN || 'http://localhost:5174,http://localhost:5173'
-const corsOrigins = corsOriginRaw.split(',').map(s => s.trim())
 const mongoUri = process.env.MONGODB_URI
 const jwtSecret = process.env.JWT_SECRET
 
 if (!mongoUri) { throw new Error('MONGODB_URI missing') }
 if (!jwtSecret) { throw new Error('JWT_SECRET missing') }
 
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'https://my-flip-board.vercel.app',
+  'https://flip-boardbackapi.vercel.app',
+]
+
+// Add custom origins from env if provided
+if (process.env.CORS_ORIGIN) {
+  const customOrigins = process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+  allowedOrigins.push(...customOrigins)
+}
+
 app.use(cors({
   origin: (origin, cb) => {
-    const allowList = [
-      ...corsOrigins,
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-    ]
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return cb(null, true)
-    if (allowList.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return cb(null, true)
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) return cb(null, true)
+    
+    // Allow localhost with any port for development
+    if (/^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return cb(null, true)
+    
+    console.warn('CORS blocked origin:', origin)
     return cb(new Error('Not allowed by CORS'))
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(express.json())
