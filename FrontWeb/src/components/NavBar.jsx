@@ -1,6 +1,7 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { setAuth, getUser, clearAuth } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function NavBar() {
   const navigate = useNavigate()
@@ -40,7 +41,7 @@ function NavBar() {
     const token = params.get('token')
     async function handleToken() {
       if (!token) return
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
       const data = await res.json()
       if (res.ok && data?.user) {
         setAuth(token, data.user)
@@ -57,7 +58,7 @@ function NavBar() {
     setLoginError('')
     setLoginLoading(true)
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail.toLowerCase(), password: loginPassword })
@@ -80,7 +81,7 @@ function NavBar() {
     setRegError('')
     setRegLoading(true)
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+      const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: regName, email: regEmail.toLowerCase(), password: regPassword })
@@ -209,12 +210,12 @@ function NavBar() {
                     <button
                       type="button"
                       className="btn btn-muted"
-                      onClick={() => (window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin)}`)}
+                      onClick={() => (window.location.href = `${API_URL}/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Google</button>
                     <button
                       type="button"
                       className="btn btn-muted"
-                      onClick={() => (window.location.href = `${import.meta.env.VITE_API_URL}/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
+                      onClick={() => (window.location.href = `${API_URL}/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Facebook</button>
                   </div>
                   <input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="Email" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />

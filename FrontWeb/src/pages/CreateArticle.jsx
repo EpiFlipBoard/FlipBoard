@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getToken } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function CreateArticle() {
   const navigate = useNavigate()
@@ -12,7 +13,7 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
     const token = getToken()
-    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/create`, {
+    const res = await fetch(`${API_URL}/api/posts/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ title, description, content, imageUrl }),

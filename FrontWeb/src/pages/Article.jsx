@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { API_URL } from '../config.js'
 
 function Article() {
   const { id } = useParams()
@@ -9,7 +10,7 @@ function Article() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/posts/${id}`)
+        const res = await fetch(`${API_URL}/api/posts/${id}`)
         const data = await res.json()
         if (res.ok) setPost(data.post)
       } catch (e) {
