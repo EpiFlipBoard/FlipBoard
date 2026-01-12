@@ -154,8 +154,22 @@ async function ensureSeed() {
 
 router.get('/', async (req, res) => {
   await ensureSeed()
-  const posts = await Post.find({}).sort({ createdAt: -1 })
-  res.json({ posts })
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 12
+  const skip = (page - 1) * limit
+
+  const posts = await Post.find({})
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+
+  const total = await Post.countDocuments()
+  
+  res.json({ 
+    posts,
+    hasMore: skip + posts.length < total,
+    total
+  })
 })
 
 router.post('/refresh', async (req, res) => {

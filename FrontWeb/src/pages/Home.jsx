@@ -19,24 +19,48 @@ function Home() {
   }, [selected])
 
   const [posts, setPosts] = useState([])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     async function load() {
-      const res = await fetch('http://localhost:4000/api/posts')
-      const data = await res.json()
-      const mapped = (data.posts || []).map(p => ({
-        id: p._id,
-        title: p.title,
-        source: p.author,
-        summary: p.description,
-        category: p.type,
-        imageUrl: p.imageUrl,
-        likes: p.likes || 0,
-        url: p.url,
-      }))
-      setPosts(mapped)
+      setLoading(true)
+      try {
+        const res = await fetch(`http://localhost:4000/api/posts?page=${page}&limit=12`)
+        const data = await res.json()
+        const mapped = (data.posts || []).map(p => ({
+          id: p._id,
+          title: p.title,
+          source: p.author,
+          summary: p.description,
+          category: p.type,
+          imageUrl: p.imageUrl,
+          likes: p.likes || 0,
+          url: p.url,
+        }))
+        setPosts(prev => page === 1 ? mapped : [...prev, ...mapped])
+        setHasMore(data.hasMore)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
-  }, [])
+  }, [page])
+
+  useEffect(() => {
+    function handleScroll() {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight - 5) {
+        if (!loading && hasMore) {
+          setPage(prev => prev + 1)
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loading, hasMore])
 
   return (
     <div>
@@ -51,15 +75,6 @@ function Home() {
       </section>
 
       <div className={`max-w-6xl mx-auto px-4${user ? ' mt-10' : ''}`}>
-        <div className="flex flex-wrap items-center justify-center gap-20 py-6">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelected(cat)}
-              className={(selected === cat ? 'text-brand-blue font-semibold' : 'text-gray-300 hover:text-white') + ' text-lg'}
-            >{cat}</button>
-          ))}
-        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
           {posts.map(a => (
@@ -140,6 +155,7 @@ function Home() {
             </article>
           ))}
         </div>
+        {loading && <div className="text-center pb-10 text-gray-500">Chargement...</div>}
       </div>
     </div>
   )
