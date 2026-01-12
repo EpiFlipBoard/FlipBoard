@@ -2,6 +2,7 @@ import express from 'express'
 import Post from '../models/Post.js'
 import Comment from '../models/Comment.js'
 import Collection from '../models/Collection.js'
+import User from '../models/User.js'
 import auth from '../middleware/auth.js'
 
 import { getPageScrap } from '../../scripts/saveRenderedHTML.js'
@@ -278,8 +279,22 @@ router.post('/create', auth, async (req, res) => {
     description: description || content.slice(0, 150) + '...',
     type: 'Article',
     author: req.user.name || 'User',
+    authorId: req.user._id,
     url: '' // Empty URL signifies internal article
   })
+
+  // Notify followers
+  try {
+    const user = await User.findById(req.user._id).populate('followers')
+    if (user && user.followers.length > 0) {
+      const emails = user.followers.map(u => u.email)
+      console.log(`[EMAIL NOTIFICATION] Sending email to followers of ${user.name}:`, emails)
+      console.log(`Subject: New post from ${user.name}: ${title}`)
+    }
+  } catch (e) {
+    console.error('Failed to send notifications', e)
+  }
+
   res.json({ post })
 })
 

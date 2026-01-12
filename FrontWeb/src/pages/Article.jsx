@@ -33,7 +33,12 @@ function Article() {
       )}
       <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight break-words">{post.title}</h1>
       <div className="flex items-center gap-4 text-gray-400 mb-8 border-b border-gray-800 pb-8">
-        <span className="font-semibold text-brand-red">{post.author}</span>
+        <Link 
+          to={`/author/${encodeURIComponent(post.authorId || post.author)}`} 
+          className="font-semibold text-brand-red hover:underline"
+        >
+          {post.author}
+        </Link>
         <span>•</span>
         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
       </div>

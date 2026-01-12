@@ -1,6 +1,25 @@
 import { Link } from 'react-router-dom'
 
 function Footer() {
+  async function handleSubscribe(e) {
+    e.preventDefault()
+    const email = e.target.email.value
+    if (!email) return
+    
+    try {
+      const res = await fetch('http://localhost:4000/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      const data = await res.json()
+      alert(data.message || 'Merci de votre inscription !')
+      e.target.reset()
+    } catch (err) {
+      alert('Une erreur est survenue.')
+    }
+  }
+
   return (
     <footer className="bg-brand-dark text-white pt-16 pb-8 border-t border-white/10 mt-auto">
       <div className="max-w-6xl mx-auto px-4">
@@ -14,6 +33,13 @@ function Footer() {
             <p className="text-gray-400 text-sm leading-relaxed">
               Votre source quotidienne d'inspiration et d'information. Découvrez des histoires qui comptent pour vous.
             </p>
+            <form onSubmit={handleSubscribe} className="mt-4">
+              <label className="block text-xs font-bold uppercase mb-2 text-gray-500">S'abonner à la newsletter</label>
+              <div className="flex">
+                <input type="email" name="email" placeholder="Votre email" className="bg-white/10 border-none rounded-l px-4 py-2 text-sm w-full focus:ring-1 focus:ring-brand-red" required />
+                <button type="submit" className="bg-brand-red px-4 py-2 rounded-r text-sm font-bold hover:bg-red-700 transition">OK</button>
+              </div>
+            </form>
           </div>
 
           {/* Column 2: Links */}

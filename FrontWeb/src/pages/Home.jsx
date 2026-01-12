@@ -33,6 +33,7 @@ function Home() {
           id: p._id,
           title: p.title,
           source: p.author,
+          authorId: p.authorId,
           summary: p.description,
           category: p.type,
           imageUrl: p.imageUrl,
@@ -90,7 +91,17 @@ function Home() {
               <div className="p-4 flex flex-col flex-1">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
                 <h2 className="text-xl font-bold text-gray-900 mt-1 break-words">{a.title}</h2>
-                <div className="text-sm text-gray-600">{a.source}</div>
+                <div 
+                  className="text-sm text-gray-600 hover:text-brand-red hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Use authorId if available, otherwise use source name
+                    const target = a.authorId || a.source
+                    navigate(`/author/${encodeURIComponent(target)}`)
+                  }}
+                >
+                  {a.source}
+                </div>
                 <p className="mt-2 text-sm text-gray-700 break-words">{a.summary}</p>
                 <div className="mt-auto pt-4 flex items-center gap-3">
                   <button

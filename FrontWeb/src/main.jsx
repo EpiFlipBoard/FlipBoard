@@ -20,6 +20,7 @@ import About from './pages/About.jsx'
 import Help from './pages/Help.jsx'
 import Privacy from './pages/Privacy.jsx'
 import Terms from './pages/Terms.jsx'
+import Author from './pages/Author.jsx'
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
       { path: 'help', element: <Help /> },
       { path: 'privacy', element: <Privacy /> },
       { path: 'terms', element: <Terms /> },
+      { path: 'author/:id', element: <Author /> },
     ],
   },
 ])
