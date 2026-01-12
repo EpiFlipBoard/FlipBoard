@@ -154,13 +154,21 @@ function Home() {
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11C16.56 7.62 17.24 7.92 18 7.92c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.07 9.63C7.56 9.16 6.88 8.86 6.12 8.86c-1.66 0-3 1.34-3 3s1.34 3 3 3c.76 0 1.44-.3 1.95-.77l7.14 4.16c-.05.21-.09.43-.09.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
                   </button>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto btn btn-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  >Lire à la source</a>
+                  {a.url ? (
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto btn btn-primary"
+                      onClick={(e) => e.stopPropagation()}
+                    >Lire à la source</a>
+                  ) : (
+                    <Link
+                      to={`/article/${a.id}`}
+                      className="ml-auto btn btn-primary"
+                      onClick={(e) => e.stopPropagation()}
+                    >Lire l'article</Link>
+                  )}
                 </div>
               </div>
             </article>
