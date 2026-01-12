@@ -12,9 +12,17 @@ import { fetchAndSaveArticles } from '../../apis/aggregator.js'
 const router = express.Router()
 
 router.get('/search', async (req, res) => {
-  const { q } = req.query
+  const { q, filter } = req.query
   if (!q) return res.json({ posts: [] })
-  const posts = await Post.find({ title: { $regex: q, $options: 'i' } }).limit(20)
+  
+  let query = {}
+  if (filter === 'author') {
+    query.author = { $regex: q, $options: 'i' }
+  } else {
+    query.title = { $regex: q, $options: 'i' }
+  }
+
+  const posts = await Post.find(query).limit(20)
   res.json({ posts })
 })
 
