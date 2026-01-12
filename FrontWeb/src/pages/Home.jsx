@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser } from '../lib/auth.js'
+import Comments from '../components/Comments.jsx'
 
 const sample = []
 
@@ -12,6 +13,7 @@ function Home() {
   const categories = ['Explore Spotlight','Inédit','Actualités','Local','Économie','Tech et sciences','Sport']
   const [selected, setSelected] = useState('Explore Spotlight')
   const user = getUser()
+  const [activeCommentPostId, setActiveCommentPostId] = useState(null)
 
   const items = useMemo(() => {
     if (selected === 'Explore Spotlight') return sample
@@ -119,12 +121,9 @@ function Home() {
                     <span>{a.likes}</span>
                   </button>
                   <button
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.stopPropagation()
-                      const text = prompt('Votre commentaire:') || ''
-                      if (!text.trim()) return
-                      const token = getToken()
-                      await fetch(`http://localhost:4000/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
+                      setActiveCommentPostId(a.id)
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Comments"
@@ -176,6 +175,14 @@ function Home() {
         </div>
         {loading && <div className="text-center pb-10 text-gray-500">Chargement...</div>}
       </div>
+      
+      {activeCommentPostId && (
+        <Comments 
+          postId={activeCommentPostId} 
+          isPopup={true} 
+          onClose={() => setActiveCommentPostId(null)} 
+        />
+      )}
     </div>
   )
 }

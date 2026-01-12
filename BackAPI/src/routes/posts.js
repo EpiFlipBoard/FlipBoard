@@ -326,8 +326,31 @@ router.post('/:id/like', auth, async (req, res) => {
 
 router.get('/:id/comments', async (req, res) => {
   const { id } = req.params
-  const comments = await Comment.find({ postId: id }).sort({ createdAt: -1 })
-  res.json({ comments })
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 5
+  const skip = (page - 1) * limit
+
+  try {
+    const total = await Comment.countDocuments({ postId: id })
+    const comments = await Comment.find({ postId: id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'name avatar')
+    
+    res.json({ 
+      comments: comments.map(c => ({
+        id: c._id,
+        text: c.text,
+        createdAt: c.createdAt,
+        user: c.userId ? { id: c.userId._id, name: c.userId.name, avatar: c.userId.avatar } : null
+      })),
+      total,
+      hasMore: skip + comments.length < total
+    })
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' })
+  }
 })
 
 router.post('/:id/comments', auth, async (req, res) => {

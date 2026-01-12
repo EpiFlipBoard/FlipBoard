@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import Comments from '../components/Comments.jsx'
 
 function Article() {
   const { id } = useParams()
@@ -42,9 +43,12 @@ function Article() {
         <span>•</span>
         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
       </div>
-      <div className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
-        {post.content}
+      <div className="prose prose-invert max-w-none mb-12">
+        <div dangerouslySetInnerHTML={{ __html: post.content || post.description }} />
       </div>
+
+      <Comments postId={id} />
+
       <div className="mt-12 pt-8 border-t border-gray-800">
         <Link to="/" className="btn btn-muted hover:text-white transition-colors">Retour à l'accueil</Link>
       </div>
