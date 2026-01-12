@@ -65,19 +65,19 @@ function Home() {
           {posts.map(a => (
             <article
               key={a.id}
-              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white"
+              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full"
               onClick={() => { 
                 if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') 
                 else navigate(`/article/${a.id}`)
               }}
             >
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
-              <div className="p-4">
+              <div className="p-4 flex flex-col flex-1">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
-                <h2 className="text-xl font-bold text-gray-900 mt-1">{a.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mt-1 break-words">{a.title}</h2>
                 <div className="text-sm text-gray-600">{a.source}</div>
-                <p className="mt-2 text-sm text-gray-700">{a.summary}</p>
-                <div className="mt-4 flex items-center gap-3">
+                <p className="mt-2 text-sm text-gray-700 break-words">{a.summary}</p>
+                <div className="mt-auto pt-4 flex items-center gap-3">
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()

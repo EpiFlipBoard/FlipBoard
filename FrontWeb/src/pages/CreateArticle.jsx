@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getToken } from '../lib/auth.js'
+import { getToken, clearAuth } from '../lib/auth.js'
 
 function CreateArticle() {
   const navigate = useNavigate()
@@ -12,11 +12,25 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
     const token = getToken()
+    if (!token) {
+      alert('Vous devez être connecté pour publier un article')
+      navigate('/')
+      return
+    }
+
     const res = await fetch('http://localhost:4000/api/posts/create', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ title, description, content, imageUrl }),
     })
+
+    if (res.status === 401) {
+      clearAuth()
+      alert('Session expirée. Veuillez vous reconnecter.')
+      window.location.href = '/' // Force reload to update UI state
+      return
+    }
+
     if (res.ok) {
       const data = await res.json()
       navigate(`/article/${data.post._id}`)
