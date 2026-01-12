@@ -16,6 +16,15 @@ import Follows from './pages/Follows.jsx'
 import Statistics from './pages/Statistics.jsx'
 import Settings from './pages/Settings.jsx'
 import CreateArticle from './pages/CreateArticle.jsx'
+import About from './pages/About.jsx'
+import Careers from './pages/Careers.jsx'
+import Press from './pages/Press.jsx'
+import Help from './pages/Help.jsx'
+import Privacy from './pages/Privacy.jsx'
+import Terms from './pages/Terms.jsx'
+import Cookies from './pages/Cookies.jsx'
+import Explore from './pages/Explore.jsx'
+import Download from './pages/Download.jsx'
 
 const router = createBrowserRouter([
   {
@@ -37,6 +46,15 @@ const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
       { path: 'login', element: <Home /> },
       { path: 'signup', element: <Home /> },
+      { path: 'about', element: <About /> },
+      { path: 'careers', element: <Careers /> },
+      { path: 'press', element: <Press /> },
+      { path: 'help', element: <Help /> },
+      { path: 'privacy', element: <Privacy /> },
+      { path: 'terms', element: <Terms /> },
+      { path: 'cookies', element: <Cookies /> },
+      { path: 'explore', element: <Explore /> },
+      { path: 'download', element: <Download /> },
     ],
   },
 ])
