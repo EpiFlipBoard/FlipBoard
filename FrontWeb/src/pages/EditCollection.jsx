@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getToken } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function EditCollection() {
   const { id } = useParams()
@@ -12,7 +13,7 @@ function EditCollection() {
 
   async function load() {
     const token = getToken()
-    const res = await fetch(`http://localhost:4000/api/collections/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+    const res = await fetch(`${API_URL}/api/collections/${id}`, { headers: { Authorization: `Bearer ${token}` } })
     const data = await res.json()
     if (res.ok && data.collection) {
       setName(data.collection.name || '')
@@ -26,7 +27,7 @@ function EditCollection() {
   async function save(e) {
     e.preventDefault()
     const token = getToken()
-    const res = await fetch(`http://localhost:4000/api/collections/${id}`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/api/collections/${id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({ name, description, imageUrl, isPrivate }),

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
 const sample = []
@@ -15,11 +16,6 @@ function Home() {
   const user = getUser()
   const [activeCommentPostId, setActiveCommentPostId] = useState(null)
 
-  const items = useMemo(() => {
-    if (selected === 'Explore Spotlight') return sample
-    return sample.filter(a => a.category === selected)
-  }, [selected])
-
   const [posts, setPosts] = useState([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -29,7 +25,7 @@ function Home() {
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch(`http://localhost:4000/api/posts?page=${page}&limit=12`)
+        const res = await fetch(`${API_URL}/api/posts?page=${page}&limit=12`)
         const data = await res.json()
         const mapped = (data.posts || []).map(p => ({
           id: p._id,
@@ -110,7 +106,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      const res = await fetch(`http://localhost:4000/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const res = await fetch(`${API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
                       const data = await res.json()
                       if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
                     }}
@@ -134,7 +130,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      await fetch(`http://localhost:4000/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await fetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
