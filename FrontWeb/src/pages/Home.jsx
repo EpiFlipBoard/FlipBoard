@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
 const sample = []
@@ -75,7 +76,7 @@ function Home() {
       <div className={`max-w-6xl mx-auto px-4${user ? ' mt-10' : ''}`}>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
-          {items.map(a => (
+          {posts.map(a => (
             <article
               key={a.id}
               className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full"
