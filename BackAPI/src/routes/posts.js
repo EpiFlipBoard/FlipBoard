@@ -2,6 +2,7 @@ import express from 'express'
 import Post from '../models/Post.js'
 import Comment from '../models/Comment.js'
 import Collection from '../models/Collection.js'
+import User from '../models/User.js'
 import auth from '../middleware/auth.js'
 
 import { getPageScrap } from '../../scripts/saveRenderedHTML.js'
@@ -12,9 +13,17 @@ import { fetchAndSaveArticles } from '../../apis/aggregator.js'
 const router = express.Router()
 
 router.get('/search', async (req, res) => {
-  const { q } = req.query
+  const { q, filter } = req.query
   if (!q) return res.json({ posts: [] })
-  const posts = await Post.find({ title: { $regex: q, $options: 'i' } }).limit(20)
+  
+  let query = {}
+  if (filter === 'author') {
+    query.author = { $regex: q, $options: 'i' }
+  } else {
+    query.title = { $regex: q, $options: 'i' }
+  }
+
+  const posts = await Post.find(query).limit(20)
   res.json({ posts })
 })
 
@@ -165,27 +174,23 @@ async function ensureSeed() {
 }
 
 router.get('/', async (req, res) => {
-  try {
-    // Auto-seed if database is empty (only once)
-    await ensureSeed()
-    
-    const posts = await Post.find({}).sort({ createdAt: -1 }).limit(100)
-    res.json({ posts })
-  } catch (err) {
-    console.error('Error fetching posts:', err)
-    res.status(500).json({ error: err.message })
-  }
-})
+  await ensureSeed()
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 12
+  const skip = (page - 1) * limit
 
-router.post('/fetch-latest', async (req, res) => {
-  try {
-    await refreshSources()
-    const posts = await Post.find({}).sort({ createdAt: -1 })
-    res.json({ ok: true, count: posts.length, posts })
-  } catch (err) {
-    console.error('Error fetching latest:', err)
-    res.status(500).json({ error: err.message })
-  }
+  const posts = await Post.find({})
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+
+  const total = await Post.countDocuments()
+  
+  res.json({ 
+    posts,
+    hasMore: skip + posts.length < total,
+    total
+  })
 })
 
 router.post('/refresh', async (req, res) => {
@@ -294,8 +299,22 @@ router.post('/create', auth, async (req, res) => {
     description: description || content.slice(0, 150) + '...',
     type: 'Article',
     author: req.user.name || 'User',
+    authorId: req.user._id,
     url: '' // Empty URL signifies internal article
   })
+
+  // Notify followers
+  try {
+    const user = await User.findById(req.user._id).populate('followers')
+    if (user && user.followers.length > 0) {
+      const emails = user.followers.map(u => u.email)
+      console.log(`[EMAIL NOTIFICATION] Sending email to followers of ${user.name}:`, emails)
+      console.log(`Subject: New post from ${user.name}: ${title}`)
+    }
+  } catch (e) {
+    console.error('Failed to send notifications', e)
+  }
+
   res.json({ post })
 })
 
@@ -327,8 +346,31 @@ router.post('/:id/like', auth, async (req, res) => {
 
 router.get('/:id/comments', async (req, res) => {
   const { id } = req.params
-  const comments = await Comment.find({ postId: id }).sort({ createdAt: -1 })
-  res.json({ comments })
+  const page = parseInt(req.query.page) || 1
+  const limit = parseInt(req.query.limit) || 5
+  const skip = (page - 1) * limit
+
+  try {
+    const total = await Comment.countDocuments({ postId: id })
+    const comments = await Comment.find({ postId: id })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('userId', 'name avatar')
+    
+    res.json({ 
+      comments: comments.map(c => ({
+        id: c._id,
+        text: c.text,
+        createdAt: c.createdAt,
+        user: c.userId ? { id: c.userId._id, name: c.userId.name, avatar: c.userId.avatar } : null
+      })),
+      total,
+      hasMore: skip + comments.length < total
+    })
+  } catch (e) {
+    res.status(500).json({ error: 'Server error' })
+  }
 })
 
 router.post('/:id/comments', auth, async (req, res) => {

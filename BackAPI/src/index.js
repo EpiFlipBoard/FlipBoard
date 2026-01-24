@@ -9,6 +9,8 @@ import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
 import collectionsRouter from './routes/collections.js'
+import usersRouter from './routes/users.js'
+import newsletterRouter from './routes/newsletter.js'
 import Post from './models/Post.js'
 
 import { parseAutonews } from '../scripts/parse/autonews.js'
@@ -18,7 +20,9 @@ import { getPageScrap } from '../scripts/saveRenderedHTML.js'
 dotenv.config()
 
 const app = express()
-const port = process.env.PORT || 4001
+const port = process.env.PORT || 4000
+const corsOriginRaw = process.env.CORS_ORIGIN || 'http://localhost:5174,http://localhost:5173'
+const corsOrigins = corsOriginRaw.split(',').map(s => s.trim())
 const mongoUri = process.env.MONGODB_URI
 const jwtSecret = process.env.JWT_SECRET
 
@@ -72,6 +76,8 @@ app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
 app.use('/api/posts', postsRouter)
 app.use('/api/collections', collectionsRouter)
+app.use('/api/users', usersRouter)
+app.use('/api/newsletter', newsletterRouter)
 
 async function importJeuneAfriqueBatch() {
   try {

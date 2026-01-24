@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser } from '../lib/auth.js'
-import { API_URL } from '../config.js'
+import Comments from '../components/Comments.jsx'
 
 const sample = []
 
@@ -13,31 +13,52 @@ function Home() {
   const categories = ['Explore Spotlight','Inédit','Actualités','Local','Économie','Tech et sciences','Sport']
   const [selected, setSelected] = useState('Explore Spotlight')
   const user = getUser()
+  const [activeCommentPostId, setActiveCommentPostId] = useState(null)
 
   const [posts, setPosts] = useState([])
-  
-  const items = useMemo(() => {
-    if (selected === 'Explore Spotlight') return posts
-    return posts.filter(a => a.category === selected)
-  }, [selected, posts])
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(true)
+  const [loading, setLoading] = useState(false)
+
   useEffect(() => {
     async function load() {
-      const res = await fetch(`${API_URL}/api/posts`)
-      const data = await res.json()
-      const mapped = (data.posts || []).map(p => ({
-        id: p._id,
-        title: p.title,
-        source: p.author,
-        summary: p.description,
-        category: p.type,
-        imageUrl: p.imageUrl,
-        likes: p.likes || 0,
-        url: p.url,
-      }))
-      setPosts(mapped)
+      setLoading(true)
+      try {
+        const res = await fetch(`http://localhost:4000/api/posts?page=${page}&limit=12`)
+        const data = await res.json()
+        const mapped = (data.posts || []).map(p => ({
+          id: p._id,
+          title: p.title,
+          source: p.author,
+          authorId: p.authorId,
+          summary: p.description,
+          category: p.type,
+          imageUrl: p.imageUrl,
+          likes: p.likes || 0,
+          url: p.url,
+        }))
+        setPosts(prev => page === 1 ? mapped : [...prev, ...mapped])
+        setHasMore(data.hasMore)
+      } catch (e) {
+        console.error(e)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
-  }, [])
+  }, [page])
+
+  useEffect(() => {
+    function handleScroll() {
+      if (window.innerHeight + document.documentElement.scrollTop >= document.documentElement.scrollHeight - 5) {
+        if (!loading && hasMore) {
+          setPage(prev => prev + 1)
+        }
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [loading, hasMore])
 
   return (
     <div>
@@ -52,33 +73,34 @@ function Home() {
       </section>
 
       <div className={`max-w-6xl mx-auto px-4${user ? ' mt-10' : ''}`}>
-        <div className="flex flex-wrap items-center justify-center gap-20 py-6">
-          {categories.map(cat => (
-            <button
-              key={cat}
-              onClick={() => setSelected(cat)}
-              className={(selected === cat ? 'text-brand-blue font-semibold' : 'text-gray-300 hover:text-white') + ' text-lg'}
-            >{cat}</button>
-          ))}
-        </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
           {items.map(a => (
             <article
               key={a.id}
-              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white"
+              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full"
               onClick={() => { 
                 if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') 
                 else navigate(`/article/${a.id}`)
               }}
             >
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
-              <div className="p-4">
+              <div className="p-4 flex flex-col flex-1">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
-                <h2 className="text-xl font-bold text-gray-900 mt-1" dangerouslySetInnerHTML={{ __html: a.title }} />
-                <div className="text-sm text-gray-600">{a.source}</div>
-                <p className="mt-2 text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: a.summary }} />
-                <div className="mt-4 flex items-center gap-3">
+                <h2 className="text-xl font-bold text-gray-900 mt-1 break-words">{a.title}</h2>
+                <div 
+                  className="text-sm text-gray-600 hover:text-brand-red hover:underline"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    // Use authorId if available, otherwise use source name
+                    const target = a.authorId || a.source
+                    navigate(`/author/${encodeURIComponent(target)}`)
+                  }}
+                >
+                  {a.source}
+                </div>
+                <p className="mt-2 text-sm text-gray-700 break-words">{a.summary}</p>
+                <div className="mt-auto pt-4 flex items-center gap-3">
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()
@@ -94,12 +116,9 @@ function Home() {
                     <span>{a.likes}</span>
                   </button>
                   <button
-                    onClick={async (e) => {
+                    onClick={(e) => {
                       e.stopPropagation()
-                      const text = prompt('Votre commentaire:') || ''
-                      if (!text.trim()) return
-                      const token = getToken()
-                      await fetch(`${API_URL}/api/posts/${a.id}/comments`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ text }) })
+                      setActiveCommentPostId(a.id)
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Comments"
@@ -129,19 +148,36 @@ function Home() {
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11C16.56 7.62 17.24 7.92 18 7.92c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.07 9.63C7.56 9.16 6.88 8.86 6.12 8.86c-1.66 0-3 1.34-3 3s1.34 3 3 3c.76 0 1.44-.3 1.95-.77l7.14 4.16c-.05.21-.09.43-.09.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
                   </button>
-                  <a
-                    href={a.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="ml-auto btn btn-primary"
-                    onClick={(e) => e.stopPropagation()}
-                  >Lire à la source</a>
+                  {a.url ? (
+                    <a
+                      href={a.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="ml-auto btn btn-primary"
+                      onClick={(e) => e.stopPropagation()}
+                    >Lire à la source</a>
+                  ) : (
+                    <Link
+                      to={`/article/${a.id}`}
+                      className="ml-auto btn btn-primary"
+                      onClick={(e) => e.stopPropagation()}
+                    >Lire l'article</Link>
+                  )}
                 </div>
               </div>
             </article>
           ))}
         </div>
+        {loading && <div className="text-center pb-10 text-gray-500">Chargement...</div>}
       </div>
+      
+      {activeCommentPostId && (
+        <Comments 
+          postId={activeCommentPostId} 
+          isPopup={true} 
+          onClose={() => setActiveCommentPostId(null)} 
+        />
+      )}
     </div>
   )
 }

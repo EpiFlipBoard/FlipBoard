@@ -20,7 +20,6 @@ function NavBar() {
   const [regLoading, setRegLoading] = useState(false)
   const [regError, setRegError] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
   const user = getUser()
   useEffect(() => {
     if (location.pathname === '/login') {
@@ -140,9 +139,6 @@ function NavBar() {
               </div>
               <button className="btn btn-primary" onClick={() => navigate('/create')}>Create an article</button>
               <button className="nav-link" title="Follows" onClick={() => navigate('/follows')}>Follows</button>
-              <button className="nav-link" title="Notifications" onClick={() => setNotifOpen(true)}>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6V9c0-3.07-1.63-5.64-4.5-6.32V2h-3v.68C7.63 3.36 6 5.92 6 9v7l-2 2v1h16v-1l-2-2z"/></svg>
-              </button>
               <div className="relative">
                 <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-white/40">
                   <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
@@ -237,17 +233,6 @@ function NavBar() {
               <p className="text-xs text-white/50 mt-6">En continuant, vous acceptez les Conditions d'utilisation et Politique de confidentialité.</p>
             </div>
           </div>
-        </div>
-      </div>
-    )}
-    {notifOpen && (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-brand-dark text-white rounded-xl shadow-magazine w-full max-w-2xl overflow-hidden">
-          <div className="flex items-center justify-between p-4">
-            <h2 className="text-2xl font-extrabold">NOTIFICATIONS</h2>
-            <button className="text-white/80 hover:text-white" onClick={() => setNotifOpen(false)}>✕</button>
-          </div>
-          <div className="p-6 min-h-[300px]"></div>
         </div>
       </div>
     )}

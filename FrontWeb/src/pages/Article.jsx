@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { API_URL } from '../config.js'
+import Comments from '../components/Comments.jsx'
 
 function Article() {
   const { id } = useParams()
@@ -34,14 +34,21 @@ function Article() {
       )}
       <h1 className="text-4xl md:text-5xl font-extrabold mb-6 leading-tight break-words">{post.title}</h1>
       <div className="flex items-center gap-4 text-gray-400 mb-8 border-b border-gray-800 pb-8">
-        <span className="font-semibold text-brand-red">{post.author}</span>
+        <Link 
+          to={`/author/${encodeURIComponent(post.authorId || post.author)}`} 
+          className="font-semibold text-brand-red hover:underline"
+        >
+          {post.author}
+        </Link>
         <span>•</span>
         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
       </div>
-      <div 
-        className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed break-words"
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
+      <div className="prose prose-invert max-w-none mb-12">
+        <div dangerouslySetInnerHTML={{ __html: post.content || post.description }} />
+      </div>
+
+      <Comments postId={id} />
+
       <div className="mt-12 pt-8 border-t border-gray-800">
         <Link to="/" className="btn btn-muted hover:text-white transition-colors">Retour à l'accueil</Link>
       </div>

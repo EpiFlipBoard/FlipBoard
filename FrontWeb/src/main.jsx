@@ -16,6 +16,11 @@ import Follows from './pages/Follows.jsx'
 import Statistics from './pages/Statistics.jsx'
 import Settings from './pages/Settings.jsx'
 import CreateArticle from './pages/CreateArticle.jsx'
+import About from './pages/About.jsx'
+import Help from './pages/Help.jsx'
+import Privacy from './pages/Privacy.jsx'
+import Terms from './pages/Terms.jsx'
+import Author from './pages/Author.jsx'
 
 const router = createBrowserRouter([
   {
@@ -37,6 +42,11 @@ const router = createBrowserRouter([
       { path: 'settings', element: <Settings /> },
       { path: 'login', element: <Home /> },
       { path: 'signup', element: <Home /> },
+      { path: 'about', element: <About /> },
+      { path: 'help', element: <Help /> },
+      { path: 'privacy', element: <Privacy /> },
+      { path: 'terms', element: <Terms /> },
+      { path: 'author/:id', element: <Author /> },
     ],
   },
 ])
