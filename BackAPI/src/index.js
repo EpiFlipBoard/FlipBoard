@@ -2,6 +2,9 @@ import express from 'express'
 import cors from 'cors'
 import mongoose from 'mongoose'
 import dotenv from 'dotenv'
+
+mongoose.set('strictQuery', false)
+
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
 import postsRouter from './routes/posts.js'
@@ -26,21 +29,48 @@ const jwtSecret = process.env.JWT_SECRET
 if (!mongoUri) { throw new Error('MONGODB_URI missing') }
 if (!jwtSecret) { throw new Error('JWT_SECRET missing') }
 
+// CORS configuration
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://localhost:5174',
+  'http://127.0.0.1:5173',
+  'http://127.0.0.1:5174',
+  'https://my-flip-board.vercel.app',
+  'https://flip-boardbackapi.vercel.app',
+]
+
+// Add custom origins from env if provided
+if (process.env.CORS_ORIGIN) {
+  const customOrigins = process.env.CORS_ORIGIN.split(',').map(s => s.trim())
+  allowedOrigins.push(...customOrigins)
+}
+
 app.use(cors({
   origin: (origin, cb) => {
-    const allowList = [
-      ...corsOrigins,
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174',
-    ]
+    // Allow requests with no origin (mobile apps, Postman, etc.)
     if (!origin) return cb(null, true)
-    if (allowList.includes(origin) || /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return cb(null, true)
+    
+    // Check if origin is in allowed list
+    if (allowedOrigins.includes(origin)) return cb(null, true)
+    
+    // Allow localhost with any port for development
+    if (/^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) return cb(null, true)
+    
+    // Allow all Vercel preview/production deployments
+    if (/^https:\/\/.*\.vercel\.app$/.test(origin)) return cb(null, true)
+    
+    console.warn('CORS blocked origin:', origin)
     return cb(new Error('Not allowed by CORS'))
   },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }))
 app.use(express.json())
+
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'FlipBoard API is running' })
+})
 
 app.use('/api/auth', authRouter)
 app.use('/api/auth/oauth', oauthRouter)
@@ -117,15 +147,80 @@ async function importAutonewsBatch() {
   }
 }
 
-mongoose.connect(mongoUri).then(async () => {
-  app.listen(port, () => {
-    console.log(`API on http://localhost:${port}`)
+// Initialize DB connection
+let isConnected = false
+let connectionPromise = null
+
+async function connectDB() {
+  if (isConnected) return true
+  
+  // If connection is already in progress, wait for it
+  if (connectionPromise) return connectionPromise
+  
+  connectionPromise = (async () => {
+    try {
+      await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        minPoolSize: 2,
+      })
+      
+      // Wait for connection to be ready
+      let retries = 0
+      while (mongoose.connection.readyState !== 1 && retries < 20) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        retries++
+      }
+      
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
+      }
+      
+      // Verify connection with ping
+      await mongoose.connection.db.admin().ping()
+      
+      isConnected = true
+      
+      // Only import data in development (Puppeteer doesn't work on Vercel)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔄 Running initial data import (dev mode)')
+        await importAutonewsBatch()
+        await importJeuneAfriqueBatch()
+      }
+      
+      return true
+    } catch (err) {
+      console.error('MongoDB connection failed:', err.message)
+      connectionPromise = null
+      isConnected = false
+      return false
+    }
+  })()
+  
+  return connectionPromise
+}
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  connectDB().then(() => {
+    app.listen(port, () => {
+      console.log(`API on http://localhost:${port}`)
+    })
+    setInterval(importAutonewsBatch, 10 * 60 * 1000)
+    setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
   })
-  await importAutonewsBatch()
-  await importJeuneAfriqueBatch()
-  setInterval(importAutonewsBatch, 10 * 60 * 1000)
-  setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
-}).catch(err => {
-  console.error('Mongo connect error', err)
-  process.exit(1)
+}
+
+// For Vercel serverless - connect on first request
+app.use(async (req, res, next) => {
+  if (!isConnected) {
+    const connected = await connectDB()
+    if (!connected) {
+      return res.status(503).json({ error: 'Database connection failed' })
+    }
+  }
+  next()
 })
+
+export default app

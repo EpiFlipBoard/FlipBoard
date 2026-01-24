@@ -56,16 +56,11 @@ async function fetchOg(url) {
 }
 
 const feedSources = [
-  'https://feeds.bbci.co.uk/news/world/rss.xml',
-  'https://feeds.reuters.com/reuters/worldNews',
-  'https://www.theverge.com/rss/index.xml',
-  'https://www.wired.com/feed/rss',
-  'https://www.theguardian.com/world/rss',
-  'https://feeds.arstechnica.com/arstechnica/index',
-  'https://techcrunch.com/feed/',
-  'https://www.engadget.com/rss.xml',
-  'https://rss.nytimes.com/services/xml/rss/nyt/World.xml',
-  'https://www.cnet.com/rss/news/',
+  'https://www.lemonde.fr/rss/une.xml',
+  'https://www.lefigaro.fr/rss/figaro_actualites.xml',
+  'https://www.francetvinfo.fr/titres.rss',
+  'https://www.rfi.fr/fr/rss',
+  'https://www.lexpress.fr/arc/outboundfeeds/rss/alaune.xml',
 ]
 
 function stripTags(s) {
@@ -109,48 +104,73 @@ function parseAtom(xml) {
   return entries.filter(i => i.title && i.link)
 }
 
+// ANCIEN CODE DE PARSING RSS - EN PAUSE
+// async function refreshSources() {
+//   const limit = 12
+//   console.log('📰 Starting to refresh RSS sources...')
+//   for (const feed of feedSources) {
+//     try {
+//       console.log(`🔄 Fetching ${feed}...`)
+//       const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
+//       const xml = await res.text()
+//       const isAtom = /<feed[\s\S]*?>/i.test(xml)
+//       const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
+//       const sourceName = hostname(feed)
+//       console.log(`✅ Found ${items.length} items from ${sourceName}`)
+//       for (const it of items) {
+//         const exists = await Post.findOne({ url: it.link })
+//         if (exists) {
+//           exists.title = it.title
+//           exists.description = it.description || exists.description
+//           exists.imageUrl = it.imageUrl || exists.imageUrl
+//           exists.author = sourceName
+//           exists.type = 'Article'
+//           await exists.save()
+//         } else {
+//           await Post.create({
+//             title: it.title,
+//             type: 'Article',
+//             author: sourceName,
+//             description: it.description,
+//             imageUrl: it.imageUrl || 'https://via.placeholder.com/800x400?text=Article',
+//             url: it.link,
+//           })
+//         }
+//       }
+//     } catch (err) {
+//       console.error(`❌ Error fetching ${feed}:`, err.message)
+//     }
+//   }
+//   console.log('✅ RSS refresh complete!')
+// }
+
 async function refreshSources() {
-  const limit = 12
-  for (const feed of feedSources) {
-    try {
-      const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-      const xml = await res.text()
-      const isAtom = /<feed[\s\S]*?>/i.test(xml)
-      const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
-      const sourceName = hostname(feed)
-      for (const it of items) {
-        let image = it.imageUrl
-        if (!image) {
-          const meta = await fetchOg(it.link)
-          image = meta.imageUrl
-        }
-        const exists = await Post.findOne({ url: it.link })
-        if (exists) {
-          exists.title = it.title
-          exists.description = it.description || exists.description
-          exists.imageUrl = image || exists.imageUrl
-          exists.author = sourceName
-          exists.type = 'Article'
-          await exists.save()
-        } else {
-          await Post.create({
-            title: it.title,
-            type: 'Article',
-            author: sourceName,
-            description: it.description,
-            imageUrl: image,
-            url: it.link,
-          })
-        }
-      }
-    } catch {}
+  try {
+    const result = await fetchAndSaveArticles(Post, {}, { 
+      sources: ['rss'], 
+      pageSize: 20 
+    })
+    return result
+  } catch (err) {
+    console.error('Error refreshing sources:', err.message)
+    throw err
   }
 }
+
+let isSeedingInProgress = false
 
 async function ensureSeed() {
   const count = await Post.countDocuments()
   if (count > 0) return
-  await refreshSources()
+  
+  if (isSeedingInProgress) return
+  
+  try {
+    isSeedingInProgress = true
+    await refreshSources()
+  } finally {
+    isSeedingInProgress = false
+  }
 }
 
 router.get('/', async (req, res) => {

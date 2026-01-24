@@ -15,11 +15,6 @@ function Home() {
   const user = getUser()
   const [activeCommentPostId, setActiveCommentPostId] = useState(null)
 
-  const items = useMemo(() => {
-    if (selected === 'Explore Spotlight') return sample
-    return sample.filter(a => a.category === selected)
-  }, [selected])
-
   const [posts, setPosts] = useState([])
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
@@ -80,7 +75,7 @@ function Home() {
       <div className={`max-w-6xl mx-auto px-4${user ? ' mt-10' : ''}`}>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
-          {posts.map(a => (
+          {items.map(a => (
             <article
               key={a.id}
               className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full"
@@ -110,7 +105,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      const res = await fetch(`http://localhost:4000/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const res = await fetch(`${API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
                       const data = await res.json()
                       if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
                     }}
@@ -134,7 +129,7 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      await fetch(`http://localhost:4000/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await fetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
