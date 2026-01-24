@@ -38,9 +38,10 @@ function Article() {
         <span>•</span>
         <span>{new Date(post.createdAt).toLocaleDateString()}</span>
       </div>
-      <div className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed whitespace-pre-wrap break-words">
-        {post.content}
-      </div>
+      <div 
+        className="prose prose-lg prose-invert max-w-none text-gray-300 leading-relaxed break-words"
+        dangerouslySetInnerHTML={{ __html: post.content }}
+      />
       <div className="mt-12 pt-8 border-t border-gray-800">
         <Link to="/" className="btn btn-muted hover:text-white transition-colors">Retour à l'accueil</Link>
       </div>

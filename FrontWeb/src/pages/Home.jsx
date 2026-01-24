@@ -14,12 +14,12 @@ function Home() {
   const [selected, setSelected] = useState('Explore Spotlight')
   const user = getUser()
 
-  const items = useMemo(() => {
-    if (selected === 'Explore Spotlight') return sample
-    return sample.filter(a => a.category === selected)
-  }, [selected])
-
   const [posts, setPosts] = useState([])
+  
+  const items = useMemo(() => {
+    if (selected === 'Explore Spotlight') return posts
+    return posts.filter(a => a.category === selected)
+  }, [selected, posts])
   useEffect(() => {
     async function load() {
       const res = await fetch(`${API_URL}/api/posts`)
@@ -63,7 +63,7 @@ function Home() {
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 pb-10">
-          {posts.map(a => (
+          {items.map(a => (
             <article
               key={a.id}
               className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white"
@@ -75,9 +75,9 @@ function Home() {
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
               <div className="p-4">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
-                <h2 className="text-xl font-bold text-gray-900 mt-1">{a.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mt-1" dangerouslySetInnerHTML={{ __html: a.title }} />
                 <div className="text-sm text-gray-600">{a.source}</div>
-                <p className="mt-2 text-sm text-gray-700">{a.summary}</p>
+                <p className="mt-2 text-sm text-gray-700" dangerouslySetInnerHTML={{ __html: a.summary }} />
                 <div className="mt-4 flex items-center gap-3">
                   <button
                     onClick={async (e) => {
