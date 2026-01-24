@@ -88,7 +88,7 @@ function Home() {
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
               <div className="p-4 flex flex-col flex-1">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
-                <h2 className="text-xl font-bold text-gray-900 mt-1 break-words">{a.title}</h2>
+                <h2 className="text-xl font-bold text-gray-900 mt-1 break-words" dangerouslySetInnerHTML={{ __html: a.title }} />
                 <div 
                   className="text-sm text-gray-600 hover:text-brand-red hover:underline"
                   onClick={(e) => {
@@ -100,7 +100,7 @@ function Home() {
                 >
                   {a.source}
                 </div>
-                <p className="mt-2 text-sm text-gray-700 break-words">{a.summary}</p>
+                <p className="mt-2 text-sm text-gray-700 break-words" dangerouslySetInnerHTML={{ __html: a.summary }} />
                 <div className="mt-auto pt-4 flex items-center gap-3">
                   <button
                     onClick={async (e) => {
