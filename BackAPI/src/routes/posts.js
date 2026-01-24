@@ -183,11 +183,18 @@ router.get('/', async (req, res) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
+    .lean()
+
+  // Convert ObjectIds to strings for likedBy
+  const postsWithStringIds = posts.map(p => ({
+    ...p,
+    likedBy: (p.likedBy || []).map(id => String(id))
+  }))
 
   const total = await Post.countDocuments()
   
   res.json({ 
-    posts,
+    posts: postsWithStringIds,
     hasMore: skip + posts.length < total,
     total
   })
