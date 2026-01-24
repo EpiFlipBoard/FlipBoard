@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
 function Article() {
