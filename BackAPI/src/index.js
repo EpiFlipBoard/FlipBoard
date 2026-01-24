@@ -159,17 +159,26 @@ async function connectDB() {
   
   connectionPromise = (async () => {
     try {
-      await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 10000,
+      const options = {
+        serverSelectionTimeoutMS: 30000, // Augmenté à 30 secondes pour Vercel
         socketTimeoutMS: 45000,
-        maxPoolSize: 10,
-        minPoolSize: 2,
-      })
+      }
+      
+      // For Vercel/serverless: use smaller pool
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        options.maxPoolSize = 1
+        options.minPoolSize = 0
+      } else {
+        options.maxPoolSize = 10
+        options.minPoolSize = 2
+      }
+      
+      await mongoose.connect(mongoUri, options)
       
       // Wait for connection to be ready
       let retries = 0
-      while (mongoose.connection.readyState !== 1 && retries < 20) {
-        await new Promise(resolve => setTimeout(resolve, 500))
+      while (mongoose.connection.readyState !== 1 && retries < 30) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
         retries++
       }
       
@@ -177,10 +186,8 @@ async function connectDB() {
         throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
       }
       
-      // Verify connection with ping
-      await mongoose.connection.db.admin().ping()
-      
       isConnected = true
+      console.log('✅ MongoDB connected successfully')
       
       // Only import data in development (Puppeteer doesn't work on Vercel)
       if (process.env.NODE_ENV !== 'production') {
@@ -191,7 +198,7 @@ async function connectDB() {
       
       return true
     } catch (err) {
-      console.error('MongoDB connection failed:', err.message)
+      console.error('❌ MongoDB connection failed:', err.message)
       connectionPromise = null
       isConnected = false
       return false
@@ -215,11 +222,30 @@ if (process.env.NODE_ENV !== 'production') {
 // For Vercel serverless - connect on first request
 app.use(async (req, res, next) => {
   if (!isConnected) {
+    console.log('🔌 Connecting to MongoDB...')
     const connected = await connectDB()
     if (!connected) {
-      return res.status(503).json({ error: 'Database connection failed' })
+      return res.status(503).json({ 
+        error: 'Database connection failed',
+        message: 'Please try again in a few seconds'
+      })
     }
   }
+  
+  // Check if connection is still alive
+  if (mongoose.connection.readyState !== 1) {
+    console.log('⚠️ MongoDB disconnected, reconnecting...')
+    isConnected = false
+    connectionPromise = null
+    const connected = await connectDB()
+    if (!connected) {
+      return res.status(503).json({ 
+        error: 'Database reconnection failed',
+        message: 'Please try again'
+      })
+    }
+  }
+  
   next()
 })
 
