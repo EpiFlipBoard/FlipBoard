@@ -25,7 +25,7 @@ function Home() {
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch(`http://localhost:4000/api/posts?page=${page}&limit=12`)
+        const res = await fetch(`${API_URL}/api/posts?page=${page}&limit=12`)
         const data = await res.json()
         const mapped = (data.posts || []).map(p => ({
           id: p._id,
