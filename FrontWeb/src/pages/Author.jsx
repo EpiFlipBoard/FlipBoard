@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
 import { getToken } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function Author() {
   const { id } = useParams()
@@ -19,7 +20,7 @@ function Author() {
 
   async function fetchAuthor() {
     try {
-      const res = await fetch(`http://localhost:4000/api/users/${id}`)
+      const res = await fetch(`${API_URL}/api/users/${id}`)
       const data = await res.json()
       if (res.ok) {
         setUser(data.user)
@@ -46,7 +47,7 @@ function Author() {
 
   async function fetchMyProfile(targetId) {
     try {
-      const res = await fetch('http://localhost:4000/api/auth/me', {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const data = await res.json()
@@ -62,7 +63,7 @@ function Author() {
     if (!token) return alert('Veuillez vous connecter pour suivre un auteur.')
     
     try {
-      const res = await fetch(`http://localhost:4000/api/users/${id}/follow`, {
+      const res = await fetch(`${API_URL}/api/users/${id}/follow`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` }
       })

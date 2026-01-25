@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { API_URL } from '../config.js'
 
 function Footer() {
   async function handleSubscribe(e) {
@@ -7,7 +8,7 @@ function Footer() {
     if (!email) return
     
     try {
-      const res = await fetch('http://localhost:4000/api/newsletter/subscribe', {
+      const res = await fetch(`${API_URL}/api/newsletter/subscribe`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })
