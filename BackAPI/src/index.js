@@ -4,9 +4,8 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
 mongoose.set('strictQuery', false)
-// Augmenter les timeouts globaux de Mongoose
-mongoose.set('bufferTimeoutMS', 30000) // Timeout pour les opérations en buffer
-mongoose.set('serverSelectionTimeoutMS', 30000) // Timeout de sélection du serveur
+// Augmenter le timeout pour les opérations en buffer
+mongoose.set('bufferTimeoutMS', 30000)
 
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
