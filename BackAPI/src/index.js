@@ -4,6 +4,9 @@ import mongoose from 'mongoose'
 import dotenv from 'dotenv'
 
 mongoose.set('strictQuery', false)
+// Augmenter les timeouts globaux de Mongoose
+mongoose.set('bufferTimeoutMS', 30000) // Timeout pour les opérations en buffer
+mongoose.set('serverSelectionTimeoutMS', 30000) // Timeout de sélection du serveur
 
 import authRouter from './routes/auth.js'
 import oauthRouter from './routes/oauth.js'
@@ -188,6 +191,19 @@ async function connectDB() {
       
       isConnected = true
       console.log('✅ MongoDB connected successfully')
+      
+      // Setup event listeners for connection monitoring
+      mongoose.connection.on('disconnected', () => {
+        console.warn('⚠️ MongoDB disconnected')
+        isConnected = false
+        connectionPromise = null
+      })
+      
+      mongoose.connection.on('error', (err) => {
+        console.error('❌ MongoDB error:', err)
+        isConnected = false
+        connectionPromise = null
+      })
       
       // Only import data in development (Puppeteer doesn't work on Vercel)
       if (process.env.NODE_ENV !== 'production') {
