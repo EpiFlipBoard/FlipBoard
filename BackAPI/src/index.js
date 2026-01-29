@@ -70,6 +70,110 @@ app.use(cors({
 }))
 app.use(express.json())
 
+// Initialize DB connection
+let isConnected = false
+let connectionPromise = null
+
+async function connectDB() {
+  if (isConnected) return true
+  
+  // If connection is already in progress, wait for it
+  if (connectionPromise) return connectionPromise
+  
+  connectionPromise = (async () => {
+    try {
+      const options = {
+        serverSelectionTimeoutMS: 30000, // Augmenté à 30 secondes pour Vercel
+        socketTimeoutMS: 45000,
+      }
+      
+      // For Vercel/serverless: use smaller pool
+      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+        options.maxPoolSize = 1
+        options.minPoolSize = 0
+      } else {
+        options.maxPoolSize = 10
+        options.minPoolSize = 2
+      }
+      
+      await mongoose.connect(mongoUri, options)
+      
+      // Wait for connection to be ready
+      let retries = 0
+      while (mongoose.connection.readyState !== 1 && retries < 30) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+        retries++
+      }
+      
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
+      }
+      
+      isConnected = true
+      console.log('✅ MongoDB connected successfully')
+      
+      // Setup event listeners for connection monitoring
+      mongoose.connection.on('disconnected', () => {
+        console.warn('⚠️ MongoDB disconnected')
+        isConnected = false
+        connectionPromise = null
+      })
+      
+      mongoose.connection.on('error', (err) => {
+        console.error('❌ MongoDB error:', err)
+        isConnected = false
+        connectionPromise = null
+      })
+      
+      // Only import data in development (Puppeteer doesn't work on Vercel)
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('🔄 Running initial data import (dev mode)')
+        await importAutonewsBatch()
+        await importJeuneAfriqueBatch()
+      }
+      
+      return true
+    } catch (err) {
+      console.error('❌ MongoDB connection failed:', err.message)
+      connectionPromise = null
+      isConnected = false
+      return false
+    }
+  })()
+  
+  return connectionPromise
+}
+
+// For Vercel serverless - connect on first request (BEFORE routes)
+app.use(async (req, res, next) => {
+  if (!isConnected) {
+    console.log('🔌 Connecting to MongoDB...')
+    const connected = await connectDB()
+    if (!connected) {
+      return res.status(503).json({ 
+        error: 'Database connection failed',
+        message: 'Please try again in a few seconds'
+      })
+    }
+  }
+  
+  // Check if connection is still alive
+  if (mongoose.connection.readyState !== 1) {
+    console.log('⚠️ MongoDB disconnected, reconnecting...')
+    isConnected = false
+    connectionPromise = null
+    const connected = await connectDB()
+    if (!connected) {
+      return res.status(503).json({ 
+        error: 'Database reconnection failed',
+        message: 'Please try again'
+      })
+    }
+  }
+  
+  next()
+})
+
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'FlipBoard API is running' })
 })
@@ -149,80 +253,6 @@ async function importAutonewsBatch() {
   }
 }
 
-// Initialize DB connection
-let isConnected = false
-let connectionPromise = null
-
-async function connectDB() {
-  if (isConnected) return true
-  
-  // If connection is already in progress, wait for it
-  if (connectionPromise) return connectionPromise
-  
-  connectionPromise = (async () => {
-    try {
-      const options = {
-        serverSelectionTimeoutMS: 30000, // Augmenté à 30 secondes pour Vercel
-        socketTimeoutMS: 45000,
-      }
-      
-      // For Vercel/serverless: use smaller pool
-      if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
-        options.maxPoolSize = 1
-        options.minPoolSize = 0
-      } else {
-        options.maxPoolSize = 10
-        options.minPoolSize = 2
-      }
-      
-      await mongoose.connect(mongoUri, options)
-      
-      // Wait for connection to be ready
-      let retries = 0
-      while (mongoose.connection.readyState !== 1 && retries < 30) {
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        retries++
-      }
-      
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
-      }
-      
-      isConnected = true
-      console.log('✅ MongoDB connected successfully')
-      
-      // Setup event listeners for connection monitoring
-      mongoose.connection.on('disconnected', () => {
-        console.warn('⚠️ MongoDB disconnected')
-        isConnected = false
-        connectionPromise = null
-      })
-      
-      mongoose.connection.on('error', (err) => {
-        console.error('❌ MongoDB error:', err)
-        isConnected = false
-        connectionPromise = null
-      })
-      
-      // Only import data in development (Puppeteer doesn't work on Vercel)
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('🔄 Running initial data import (dev mode)')
-        await importAutonewsBatch()
-        await importJeuneAfriqueBatch()
-      }
-      
-      return true
-    } catch (err) {
-      console.error('❌ MongoDB connection failed:', err.message)
-      connectionPromise = null
-      isConnected = false
-      return false
-    }
-  })()
-  
-  return connectionPromise
-}
-
 // For local development
 if (process.env.NODE_ENV !== 'production') {
   connectDB().then(() => {
@@ -233,35 +263,5 @@ if (process.env.NODE_ENV !== 'production') {
     setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
   })
 }
-
-// For Vercel serverless - connect on first request
-app.use(async (req, res, next) => {
-  if (!isConnected) {
-    console.log('🔌 Connecting to MongoDB...')
-    const connected = await connectDB()
-    if (!connected) {
-      return res.status(503).json({ 
-        error: 'Database connection failed',
-        message: 'Please try again in a few seconds'
-      })
-    }
-  }
-  
-  // Check if connection is still alive
-  if (mongoose.connection.readyState !== 1) {
-    console.log('⚠️ MongoDB disconnected, reconnecting...')
-    isConnected = false
-    connectionPromise = null
-    const connected = await connectDB()
-    if (!connected) {
-      return res.status(503).json({ 
-        error: 'Database reconnection failed',
-        message: 'Please try again'
-      })
-    }
-  }
-  
-  next()
-})
 
 export default app
