@@ -15,6 +15,11 @@ dist-ssr
 .env.local
 .env.production
 
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -25,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Cache
+.cache/
+temp/
+tmp/
+.vite/
