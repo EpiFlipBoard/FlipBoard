@@ -142,7 +142,16 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const url = a.url || `${window.location.origin}`
-                      if (navigator.share) { try { await navigator.share({ title: a.title, text: a.summary, url }) } catch {} } else { await navigator.clipboard.writeText(url); alert('Lien copié') }
+                      if (navigator.share) { 
+                        try { 
+                          await navigator.share({ title: a.title, text: a.summary, url }) 
+                        } catch (err) {
+                          console.log('Share failed', err)
+                        } 
+                      } else { 
+                        await navigator.clipboard.writeText(url); 
+                        alert('Lien copié') 
+                      }
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Share"
