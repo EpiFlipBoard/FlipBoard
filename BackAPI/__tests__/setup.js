@@ -5,7 +5,7 @@ dotenv.config({ path: '.env.test' });
 
 process.env.NODE_ENV = 'test';
 
-jest.setTimeout(30000);
+// Global test timeout is set in jest.config.js (testTimeout: 30000)
 
 afterAll(async () => {
   if (mongoose.connection.readyState !== 0) {
