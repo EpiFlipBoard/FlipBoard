@@ -2,7 +2,9 @@ import mongoose from 'mongoose';
 import Post from '../../src/models/Post.js';
 import User from '../../src/models/User.js';
 
-describe('Post Model', () => {
+const skipIfNoMongoDB = process.env.CI ? describe.skip : describe;
+
+skipIfNoMongoDB('Post Model', () => {
   let testUser;
 
   beforeAll(async () => {

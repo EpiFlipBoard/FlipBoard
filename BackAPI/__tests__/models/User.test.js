@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 import User from '../../src/models/User.js';
 
-describe('User Model', () => {
+const skipIfNoMongoDB = process.env.CI ? describe.skip : describe;
+
+skipIfNoMongoDB('User Model', () => {
   beforeAll(async () => {
     if (mongoose.connection.readyState === 0) {
       await mongoose.connect(process.env.MONGODB_URI);

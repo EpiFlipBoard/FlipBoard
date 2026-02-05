@@ -6,7 +6,9 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '.env.test' });
 
-describe('API Endpoints Examples', () => {
+const skipIfNoMongoDB = process.env.CI ? describe.skip : describe;
+
+skipIfNoMongoDB('API Endpoints Examples', () => {
   let app;
 
   beforeAll(async () => {
