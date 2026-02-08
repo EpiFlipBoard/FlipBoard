@@ -25,23 +25,37 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 ### 2.1 Core Features
 
-| Feature                         | Description                                               | Priority |
-| ------------------------------- | --------------------------------------------------------- | -------- |
-| Authentication                  | Login via email/password and OAuth (Google/Meta)          | High     |
-| Content Ingestion               | Automatic collection of RSS feeds and HTML parsing        | High     |
-| Article Reading                 | Stylized display (magazine layout) with smooth pagination | High     |
-| Category/Topic Filtering        | Filter content by category or tags                        | Medium   |
-| Favorites / Read Later          | Save articles locally or in the cloud                     | Medium   |
-| Search                          | Full-text search on article titles and summaries          | Medium   |
-| Admin Dashboard                 | Manage content sources (add/remove, statistics)           | Low      |
-| Notifications / Recommendations | Suggest articles based on user profile                    | Phase 2  |
+| Feature                         | Description                                               | Priority | Status       |
+| ------------------------------- | --------------------------------------------------------- | -------- | ------------ |
+| Authentication                  | Login via email/password and OAuth (Google/Meta)          | High     | Implemented  |
+| Content Ingestion               | Automatic collection of RSS feeds and HTML parsing        | High     | Implemented  |
+| Article Reading                 | Stylized display (magazine layout) with smooth pagination | High     | Implemented  |
+| Category/Topic Filtering        | Filter content by category or tags                        | Medium   | Implemented  |
+| Favorites / Read Later          | Save articles locally or in the cloud                     | Medium   | Implemented  |
+| Collections                     | Create and manage article collections                     | Medium   | Implemented  |
+| Follow System                   | Follow users and view their content                       | Medium   | Implemented  |
+| Comments                        | Comment on articles and engage with content               | Medium   | Implemented  |
+| Newsletter Subscription         | Subscribe to email newsletters                            | Medium   | Implemented  |
+| Search                          | Full-text search on article titles and summaries          | Medium   | Implemented  |
+| Admin Tools                     | Clean duplicates, fix HTML entities, import sources       | Low      | Implemented  |
+| Automated Content Updates       | Hourly/daily auto-population via cron jobs                | Low      | Implemented  |
+| Notifications / Recommendations | Suggest articles based on user profile                    | Phase 2  | Planned      |
 
-### 2.2 Excluded (Non-MVP) Features
+### 2.2 Implemented Beyond MVP
 
-* Comments and social interactions
+* Comments and social interactions (follow system, likes, comments)
+* Newsletter subscription system
+* Collection management
+* Admin tools for data cleaning (duplicates, HTML entities)
+* Automated content ingestion with scheduling
+* Web scraping for JavaScript-heavy sites (Autonews, Jeune Afrique)
+
+### 2.3 Excluded (Future Features)
+
 * Advanced recommendation engine (AI)
 * Monetization/subscription model
 * Native mobile apps (planned later via React Native)
+* Offline reading mode
 
 ---
 
@@ -52,28 +66,35 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 * **Frontend:** React + Vite + React Router + TailwindCSS
 * **Backend:** Express.js with REST APIs + Mongoose ODM
 * **Database:** MongoDB (Local development → MongoDB Atlas for production)
-* **Content Sources:** RSS Feeds (Le Monde, Le Figaro, France Info, RFI, L'Express) + Optional APIs (NewsAPI, Guardian, NY Times)
-* **Web Scraping:** Puppeteer for JavaScript-heavy sites (Autonews, Jeune Afrique)
+* **Content Sources:** 
+  - RSS Feeds (Le Monde, Le Figaro, France Info, RFI, L'Express)
+  - APIs: NewsAPI, Guardian API, NY Times API
+  - Web Scraping: Puppeteer for Autonews and Jeune Afrique
+* **Automation:** Vercel Cron Jobs for scheduled content updates
+* **Admin Scripts:** cleanDuplicates.js, fixHtmlEntities.js, populateArticles.js
 * **CI/CD:** GitHub Actions
 * **Hosting:** Vercel (Frontend + Backend)
 
 ### 3.2 Security
 
 * **Authentication:**
-  - Passwords hashed with bcrypt (10 rounds)
-  - JWT tokens (7-day expiration)
+  - Passwords hashed with bcryptjs (10 rounds)
+  - JWT tokens (7-day expiration with automatic logout on expiry)
   - OAuth 2.0 (Google & Facebook integration)
+  - Frontend authFetch wrapper handles token expiration
 * **API Security:**
   - JWT verification middleware for protected routes
   - CORS configured with whitelist (localhost + production domains)
   - Bearer token authentication header
+  - Admin endpoints protected by authentication
 * **Transport Security:**
   - HTTPS mandatory in production (Vercel automatically managed)
   - Secure environment variables (.env excluded from Git)
 * **Data Protection:**
-  - MongoDB connection secured with credentials
+  - MongoDB connection secured with credentials (local + Atlas)
   - API keys stored in environment variables only
   - No sensitive data in frontend code
+  - HTML entity sanitization on content import
 * **GDPR Compliance:**
   - User account deletion capability
   - Data removal on request
@@ -87,35 +108,68 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 1. **Frontend (React + Vite):** 
    - Responsive SPA with React Router
    - TailwindCSS for styling
-   - Pages: Home, Profile, Favorites, Settings, Admin, Statistics, Newsletter
-   - Components: NavBar with auth modals
+   - Pages: Home, Profile, Favorites, Settings, Admin, Statistics, Newsletter, Article, Search, Collections, Author, Follows, Help, About, Terms, Privacy
+   - Components: NavBar with auth modals, Comments, Footer
+   - Auth: Custom authFetch wrapper for automatic token expiration handling
 
 2. **Backend API (Express.js):**
-   - RESTful endpoints for auth, posts, collections
+   - RESTful endpoints for:
+     * Authentication (email/password, OAuth)
+     * Posts (CRUD, likes, search)
+     * Collections (create, manage, share)
+     * Users (profiles, follow system)
+     * Comments (create, read)
+     * Newsletter (subscription management)
+     * Admin tools (duplicates cleanup, entity fixes, content imports)
    - JWT authentication + OAuth (Google, Facebook)
-   - Mongoose for MongoDB interactions
-   - CORS configuration fMongoDB
+   - Mongoose ODM for MongoDB interactions
+   - CORS configuration with whitelist
+   - Automated content ingestion with scheduling
+
+3. **Content Aggregation:**
+   - RSS parser for multiple French news sources
+   - API integrations: NewsAPI, Guardian, NY Times
+   - Puppeteer-based scraping for Autonews and Jeune Afrique
+   - Automated duplicate detection and cleanup
+   - HTML entity decoding on import
 
 4. **Database (MongoDB):**
    - Local: mongodb://localhost:27017/myflip
    - Production: MongoDB Atlas (managed cloud)
-   - Collections: users, posts, comments, collections
+   - Collections: users, posts, comments, collections, newsletters
+   - Indexes: email (users), url (posts for duplicate prevention)
 
 5. **Deployment:**
-   - Frontend & Backend: Vercel
+   - Frontend: Vercel
+   - Backend: Vercel (serverless functions)
+   - Cron Jobs: Vercel Cron (daily limit on Hobby plan)
    - Database: MongoDB Atlas (free tier M0)
+
+6. **Testing & Quality:**
+   - Backend: Jest + Supertest
+   - Frontend: React Testing Library + Vitest
+   - Linting: ESLint with custom config
+   - CI/CD: GitHub Actions (lint + test on push)
+   - Coverage reports generated automatically
 
 ---
 
 ## 5. Data Architecture (Simplified)
 
-**Main Tables:**
+**Main Collections:**
 
-* users(id, email, password_hash, prefs jsonb, created_at)
-* sources(id, url, category, enabled, last_fetch)
-* articles(id, source_id, title, summary, url, content_html, published_at, meta jsonb)
-* favorites(user_id, article_id, created_at)
-* user_activity(user_id, event_type, data jsonb, created_at)
+* **users:** email, passwordHash, name, avatar, isSource, following[], followers[], likedPosts[], timestamps
+* **posts:** title, type, author, description, imageUrl, url, content, authorId, likes, likedBy[], timestamps
+* **collections:** name, description, userId, posts[], isPublic, timestamps
+* **comments:** postId, userId, content, timestamps
+* **newsletters:** email, subscribed, verificationToken, verified, timestamps
+
+**Key Relationships:**
+* Users can follow other users (many-to-many)
+* Users can like posts (many-to-many via likedPosts and likedBy)
+* Posts belong to authors (one-to-many)
+* Collections belong to users and contain posts (one-to-many and many-to-many)
+* Comments belong to posts and users (many-to-one)
 
 ## 6. Project Workflow & Methodology
 
@@ -135,20 +189,29 @@ Develop a web and mobile-first content aggregation and reading platform inspired
 
 ## 7. Testing Strategy
 
-| Test Type     | Tool                  | Objective                            |
-| ------------- | --------------------- | ------------------------------------ |
-| Unit Tests    | Jest                  | Validate business logic              |
-| Integration   | Supertest / Jest      | Validate API and DB consistency      |
-| Frontend (UI) | React Testing Library | Test UI components                   |
-| E2E           | Playwright            | Simulate real user workflows         |
-| Load / Stress | k6 / Locust           | Validate performance and scalability |
+| Test Type     | Tool                  | Objective                            | Status      |
+| ------------- | --------------------- | ------------------------------------ | ----------- |
+| Unit Tests    | Jest                  | Validate business logic              | Implemented |
+| Integration   | Supertest / Jest      | Validate API and DB consistency      | Implemented |
+| Frontend (UI) | React Testing Library | Test UI components                   | Implemented |
+| E2E           | Playwright            | Simulate real user workflows         | Planned     |
+| Load / Stress | k6 / Locust           | Validate performance and scalability | Planned     |
+
+**Current Test Coverage:**
+* Backend: Models (User, Post), Middleware (auth), API endpoints (health, CRUD)
+* Frontend: Components (NavBar), Pages (Home), Utils (auth, storage)
+* See Documentation/Testing.md for complete test file list
 
 ---
 
 ## 8. Expected Deliverables
 
 * Documented source code (frontend, backend)
-* GitHub Actions CI/CD
-* Technical documentation
-
+* GitHub Actions CI/CD (lint + test automation)
+* Technical documentation (specifications, testing guide)
+* Functional web application deployed on Vercel
+* MongoDB Atlas database with proper schema
+* Authentication system (JWT + OAuth)
+* Content aggregation from multiple sources
+* Test suite with coverage reports
 
