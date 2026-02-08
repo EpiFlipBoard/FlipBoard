@@ -183,14 +183,30 @@ router.get('/', async (req, res) => {
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
+    .lean()
+
+  // Convert ObjectIds to strings for likedBy
+  const postsWithStringIds = posts.map(p => ({
+    ...p,
+    likedBy: (p.likedBy || []).map(id => String(id))
+  }))
 
   const total = await Post.countDocuments()
   
   res.json({ 
-    posts,
+    posts: postsWithStringIds,
     hasMore: skip + posts.length < total,
     total
   })
+})
+
+router.get('/liked', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).populate('likedPosts')
+    res.json({ posts: user.likedPosts || [] })
+  } catch (e) {
+    res.status(500).json({ error: e.message })
+  }
 })
 
 router.post('/refresh', async (req, res) => {
@@ -333,14 +349,21 @@ router.post('/:id/like', auth, async (req, res) => {
   const userId = req.user._id
   const post = await Post.findById(id)
   if (!post) return res.status(404).json({ error: 'not found' })
+  
+  const user = await User.findById(userId)
+  if (!user) return res.status(404).json({ error: 'user not found' })
+  
   const liked = post.likedBy.some(u => String(u) === String(userId))
   if (liked) {
     post.likedBy = post.likedBy.filter(u => String(u) !== String(userId))
+    user.likedPosts = user.likedPosts.filter(p => String(p) !== String(id))
   } else {
     post.likedBy.push(userId)
+    user.likedPosts.push(id)
   }
   post.likes = post.likedBy.length
   await post.save()
+  await user.save()
   res.json({ likes: post.likes, liked: !liked })
 })
 

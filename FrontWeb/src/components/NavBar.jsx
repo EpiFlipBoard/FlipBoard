@@ -106,15 +106,15 @@ function NavBar() {
               <img src="/logo.png" alt="Logo" className="h-16 w-16" />
             </Link>
             <Link to="/" className="flex items-center gap-2">
-              <button className="nav-link">For you</button>
+              <button className="nav-link">Pour vous</button>
             </Link>
-            <button className="nav-link">Today's edition</button>
+            <button className="nav-link">Édition du jour</button>
             <div className="relative">
               <button className="nav-link" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
               {menuOpen && (
                 <div className="absolute mt-2 w-40 bg-white text-brand-dark rounded shadow p-2">
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Modify</button>
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Explore more</button>
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Modifier</button>
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Explorer plus</button>
                 </div>
               )}
             </div>
@@ -133,12 +133,12 @@ function NavBar() {
                   value={q}
                   onChange={e=>setQ(e.target.value)}
                   onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
-                  placeholder="Search on EPI-Flipboard"
+                  placeholder="Rechercher sur EPI-Flipboard"
                   className="search-input"
                 />
               </div>
-              <button className="btn btn-primary" onClick={() => navigate('/create')}>Create an article</button>
-              <button className="nav-link" title="Follows" onClick={() => navigate('/follows')}>Follows</button>
+              <button className="btn btn-primary" onClick={() => navigate('/create')}>Créer un article</button>
+              <button className="nav-link" title="Abonnements" onClick={() => navigate('/follows')}>Abonnements</button>
               <div className="relative">
                 <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-white/40">
                   <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
@@ -146,14 +146,14 @@ function NavBar() {
                 {profileOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white border rounded shadow p-2">
                     <div className="flex flex-col">
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>Account</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>Statistics</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>Settings</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>Compte</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>Statistiques</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>Paramètres</button>
                       <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center justify-between">
-                        <span>Dark Mode</span>
+                        <span>Mode sombre</span>
                         <span className="text-red-500">✓</span>
                       </button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Disconnect</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Déconnexion</button>
                     </div>
                   </div>
                 )}
@@ -167,12 +167,12 @@ function NavBar() {
                   value={q}
                   onChange={e=>setQ(e.target.value)}
                   onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
-                  placeholder="Search on EPI-Flipboard"
+                  placeholder="Rechercher sur EPI-Flipboard"
                   className="search-input"
                 />
               </div>
-              <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>Register</button>
-              <button className="nav-link" onClick={() => navigate('/login')}>Login</button>
+              <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>S'inscrire</button>
+              <button className="nav-link" onClick={() => navigate('/login')}>Connexion</button>
             </>
           )}
         </nav>

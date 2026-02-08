@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   isSource: { type: Boolean, default: false },
   following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  likedPosts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
 }, { timestamps: true })
 
 export default mongoose.model('User', userSchema)

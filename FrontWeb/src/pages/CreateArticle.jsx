@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authFetch } from '../lib/auth.js'
+import { getToken, clearAuth } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function CreateArticle() {
   const navigate = useNavigate()
@@ -12,7 +14,7 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    const res = await authFetch('http://localhost:4000/api/posts/create', {
+    const res = await fetch(`${API_URL}/api/posts/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, description, content, imageUrl }),

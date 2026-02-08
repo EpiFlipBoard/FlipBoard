@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { getToken } from '../lib/auth.js'
+import { API_URL } from '../config.js'
 
 function Search() {
   const location = useLocation()
@@ -31,7 +32,7 @@ function Search() {
     
     if (query.trim()) {
       setLoading(true)
-      fetch(`http://localhost:4000/api/posts/search?q=${encodeURIComponent(query)}&filter=${type}`)
+      fetch(`${API_URL}/api/posts/search?q=${encodeURIComponent(query)}&filter=${type}`)
         .then(res => res.json())
         .then(data => {
           setResults(data.posts || [])
