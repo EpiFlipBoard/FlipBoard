@@ -249,6 +249,82 @@ app.get('/api/admin/clean-duplicates', async (req, res) => {
   }
 })
 
+// Fonction utilitaire pour décoder les entités HTML
+function decodeHtmlEntities(text) {
+  if (!text || typeof text !== 'string') return text
+  
+  let decoded = text
+  
+  // Entités HTML communes
+  const entities = {
+    '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"',
+    '&#39;': "'", '&apos;': "'", '&eacute;': 'é', '&egrave;': 'è', '&ecirc;': 'ê',
+    '&agrave;': 'à', '&acirc;': 'â', '&ugrave;': 'ù', '&ucirc;': 'û', '&ccedil;': 'ç',
+    '&ocirc;': 'ô', '&icirc;': 'î', '&euml;': 'ë', '&iuml;': 'ï', '&uuml;': 'ü'
+  }
+  
+  for (const [entity, char] of Object.entries(entities)) {
+    decoded = decoded.replace(new RegExp(entity, 'g'), char)
+  }
+  
+  // Entités numériques hexadécimales (&#xE9; -> é)
+  decoded = decoded.replace(/&#x([0-9A-F]+);/gi, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+  
+  // Entités numériques décimales (&#233; -> é)
+  decoded = decoded.replace(/&#(\d+);/g, (match, dec) => {
+    return String.fromCharCode(parseInt(dec, 10))
+  })
+  
+  return decoded
+}
+
+// Route pour corriger les entités HTML dans les articles
+app.get('/api/admin/fix-entities', async (req, res) => {
+  try {
+    console.log('🔧 [Fix] Correction des entités HTML...')
+    
+    const posts = await Post.find({})
+    let fixedCount = 0
+    const problematicPattern = /&#x[0-9A-F]+;|&#\d+;|&[a-z]+;/i
+
+    for (const post of posts) {
+      let needsUpdate = false
+      
+      if (post.title && problematicPattern.test(post.title)) {
+        post.title = decodeHtmlEntities(post.title)
+        needsUpdate = true
+      }
+      
+      if (post.description && problematicPattern.test(post.description)) {
+        post.description = decodeHtmlEntities(post.description)
+        needsUpdate = true
+      }
+      
+      if (post.author && problematicPattern.test(post.author)) {
+        post.author = decodeHtmlEntities(post.author)
+        needsUpdate = true
+      }
+      
+      if (needsUpdate) {
+        await post.save()
+        fixedCount++
+      }
+    }
+    
+    console.log(`✅ [Fix] ${fixedCount} articles corrigés`)
+    res.json({ 
+      success: true, 
+      articlesFixed: fixedCount,
+      totalArticles: posts.length 
+    })
+  } catch (error) {
+    console.error('❌ [Fix] Erreur:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 async function importJeuneAfriqueBatch() {
   try {
     const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
@@ -258,9 +334,13 @@ async function importJeuneAfriqueBatch() {
     for (const it of items.slice(0, limit)) {
       if (!it.url || seen.has(it.url)) continue
       seen.add(it.url)
+      
+      // Décoder les entités HTML
+      const cleanTitle = decodeHtmlEntities(it.title)
+      
       const existing = await Post.findOne({ url: it.url })
       if (existing) {
-        existing.title = it.title
+        existing.title = cleanTitle
         existing.type = 'Magazine'
         existing.author = 'JeuneAfrique'
         existing.description = "Un article de JeuneAfrique !"
@@ -268,7 +348,7 @@ async function importJeuneAfriqueBatch() {
         await existing.save()
       } else {
         await Post.create({
-          title: it.title,
+          title: cleanTitle,
           type: 'Magazine',
           author: 'JeuneAfrique',
           description: "Un article de JeuneAfrique !",
@@ -292,9 +372,13 @@ async function importAutonewsBatch() {
     for (const it of items.slice(0, limit)) {
       if (!it.url || seen.has(it.url)) continue
       seen.add(it.url)
+      
+      // Décoder les entités HTML
+      const cleanTitle = decodeHtmlEntities(it.title)
+      
       const existing = await Post.findOne({ url: it.url })
       if (existing) {
-        existing.title = it.title
+        existing.title = cleanTitle
         existing.type = 'Magazine'
         existing.author = 'Autonews'
         existing.description = "Un article d'AutoNews !"
@@ -302,7 +386,7 @@ async function importAutonewsBatch() {
         await existing.save()
       } else {
         await Post.create({
-          title: it.title,
+          title: cleanTitle,
           type: 'Magazine',
           author: 'Autonews',
           description: "Un article d'AutoNews !",

@@ -86,6 +86,39 @@ export async function aggregateArticles(apiKeys = {}, options = {}) {
 /**
  * Sauvegarde les articles récupérés dans la base de données
  */
+/**
+ * Décode les entités HTML dans un texte
+ */
+function decodeHtmlEntities(text) {
+  if (!text || typeof text !== 'string') return text
+  
+  let decoded = text
+  
+  // Entités HTML communes
+  const entities = {
+    '&nbsp;': ' ', '&amp;': '&', '&lt;': '<', '&gt;': '>', '&quot;': '"',
+    '&#39;': "'", '&apos;': "'", '&eacute;': 'é', '&egrave;': 'è', '&ecirc;': 'ê',
+    '&agrave;': 'à', '&acirc;': 'â', '&ugrave;': 'ù', '&ucirc;': 'û', '&ccedil;': 'ç',
+    '&ocirc;': 'ô', '&icirc;': 'î', '&euml;': 'ë', '&iuml;': 'ï', '&uuml;': 'ü'
+  }
+  
+  for (const [entity, char] of Object.entries(entities)) {
+    decoded = decoded.replace(new RegExp(entity, 'g'), char)
+  }
+  
+  // Entités numériques hexadécimales
+  decoded = decoded.replace(/&#x([0-9A-F]+);/gi, (_, hex) => 
+    String.fromCharCode(parseInt(hex, 16))
+  )
+  
+  // Entités numériques décimales
+  decoded = decoded.replace(/&#(\d+);/g, (_, dec) => 
+    String.fromCharCode(parseInt(dec, 10))
+  )
+  
+  return decoded
+}
+
 export async function fetchAndSaveArticles(Post, apiKeys = {}, options = {}) {
   try {
     const articles = await aggregateArticles(apiKeys, options)
@@ -94,24 +127,30 @@ export async function fetchAndSaveArticles(Post, apiKeys = {}, options = {}) {
     let updatedCount = 0
 
     for (const article of articles) {
+      // Décoder les entités HTML dans les champs texte
+      const cleanTitle = decodeHtmlEntities(article.title)
+      const cleanDescription = decodeHtmlEntities(article.description)
+      const cleanAuthor = decodeHtmlEntities(article.author)
+      
       // Vérifier si l'article existe déjà (par URL)
       const existing = await Post.findOne({ url: article.url })
       
       if (existing) {
         // Mettre à jour si nécessaire
-        existing.title = article.title
-        existing.description = article.description
+        existing.title = cleanTitle
+        existing.description = cleanDescription
         existing.imageUrl = article.imageUrl
+        existing.author = cleanAuthor
         await existing.save()
         updatedCount++
       } else {
         // Créer un nouveau post
         await Post.create({
-          title: article.title,
-          description: article.description,
+          title: cleanTitle,
+          description: cleanDescription,
           url: article.url,
           imageUrl: article.imageUrl,
-          author: article.author,
+          author: cleanAuthor,
           type: article.type,
           likes: 0,
           createdAt: article.publishedAt

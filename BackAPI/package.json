@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "node src/index.js",
     "populate": "node scripts/populateArticles.js",
+    "clean": "node scripts/cleanDuplicates.js",
+    "fix-entities": "node scripts/fixHtmlEntities.js",
     "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest",
     "test:watch": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --watch",
     "test:coverage": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --coverage",
