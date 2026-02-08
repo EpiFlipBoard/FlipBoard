@@ -80,6 +80,18 @@ app.use('/api/collections', collectionsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/newsletter', newsletterRouter)
 
+// Route pour le cron job d'auto-population
+app.get('/api/cron/populate', async (req, res) => {
+  try {
+    console.log('🔄 [Cron] Déclenchement de l\'auto-populate...')
+    await autoPopulateArticles()
+    res.json({ success: true, message: 'Articles mis à jour avec succès' })
+  } catch (error) {
+    console.error('❌ [Cron] Erreur:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 async function importJeuneAfriqueBatch() {
   try {
     const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
@@ -211,11 +223,16 @@ async function connectDB() {
       
       isConnected = true
       
-      // Only import data in development (Puppeteer doesn't work on Vercel)
+      // Import data based on environment
       if (process.env.NODE_ENV !== 'production') {
+        // En développement: tout importer
         console.log('🔄 Running initial data import (dev mode)')
         await importAutonewsBatch()
         await importJeuneAfriqueBatch()
+        await autoPopulateArticles()
+      } else {
+        // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
+        console.log('🔄 Running initial auto-populate (production mode)')
         await autoPopulateArticles()
       }
       
