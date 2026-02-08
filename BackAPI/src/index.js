@@ -294,10 +294,6 @@ async function autoPopulateArticles() {
   }
 }
 
-// Initialize DB connection
-let isConnected = false
-let connectionPromise = null
-
 async function connectDB() {
   if (isConnected) return true
   
