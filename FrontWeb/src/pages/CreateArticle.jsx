@@ -13,17 +13,23 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    const res = await fetch(`${API_URL}/api/posts/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, description, content, imageUrl }),
-    })
+    try {
+      const res = await authFetch(`${API_URL}/api/posts/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, description, content, imageUrl }),
+      })
 
-    if (res.ok) {
-      const data = await res.json()
-      navigate(`/article/${data.post._id}`)
-    } else {
-      alert('Failed to create article')
+      if (res.ok) {
+        const data = await res.json()
+        navigate(`/article/${data.post._id}`)
+      } else {
+        const error = await res.json()
+        alert(error.error || 'Échec de la création de l\'article')
+      }
+    } catch (err) {
+      console.error('Error creating article:', err)
+      alert('Erreur lors de la création de l\'article')
     }
   }
 

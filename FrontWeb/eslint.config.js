@@ -12,6 +12,13 @@ export default [
       globals: {
         ...globals.browser,
         vi: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
       },
       parserOptions: {
         ecmaVersion: 'latest',
