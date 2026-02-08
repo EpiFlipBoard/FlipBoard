@@ -16,6 +16,7 @@ import Post from './models/Post.js'
 import { parseAutonews } from '../scripts/parse/autonews.js'
 import { parseJeuneAfrique } from '../scripts/parse/jeuneafrique.js'
 import { getPageScrap } from '../scripts/saveRenderedHTML.js'
+import { fetchAndSaveArticles } from '../apis/aggregator.js'
 
 dotenv.config()
 
@@ -147,6 +148,34 @@ async function importAutonewsBatch() {
   }
 }
 
+// Fonction pour auto-populer les articles depuis les API news
+async function autoPopulateArticles() {
+  try {
+    console.log('🔄 [Auto-populate] Récupération des nouveaux articles...')
+    
+    const apiKeys = {
+      newsapi: process.env.NEWSAPI_KEY,
+      guardian: process.env.GUARDIAN_API_KEY,
+      nytimes: process.env.NYTIMES_API_KEY
+    }
+
+    // Configuration des sources
+    const sources = ['rss'] // RSS est gratuit
+    if (apiKeys.newsapi) sources.push('newsapi')
+    if (apiKeys.guardian) sources.push('guardian')
+    if (apiKeys.nytimes) sources.push('nytimes')
+
+    const result = await fetchAndSaveArticles(Post, apiKeys, {
+      sources,
+      pageSize: 15
+    })
+
+    console.log(`✅ [Auto-populate] ${result.saved} nouveaux articles, ${result.updated} mis à jour (${result.total} total)`)
+  } catch (error) {
+    console.error('❌ [Auto-populate] Erreur:', error.message)
+  }
+}
+
 // Initialize DB connection
 let isConnected = false
 let connectionPromise = null
@@ -187,6 +216,7 @@ async function connectDB() {
         console.log('🔄 Running initial data import (dev mode)')
         await importAutonewsBatch()
         await importJeuneAfriqueBatch()
+        await autoPopulateArticles()
       }
       
       return true
@@ -206,9 +236,12 @@ if (process.env.NODE_ENV !== 'production') {
   connectDB().then(() => {
     app.listen(port, () => {
       console.log(`API on http://localhost:${port}`)
+      console.log('⏰ Auto-populate activé: toutes les heures')
     })
     setInterval(importAutonewsBatch, 10 * 60 * 1000)
     setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
+    // Auto-populate les articles toutes les heures
+    setInterval(autoPopulateArticles, 60 * 60 * 1000)
   })
 }
 
