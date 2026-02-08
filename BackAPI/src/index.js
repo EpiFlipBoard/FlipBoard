@@ -24,8 +24,6 @@ dotenv.config()
 
 const app = express()
 const port = process.env.PORT || 4000
-const corsOriginRaw = process.env.CORS_ORIGIN || 'http://localhost:5174,http://localhost:5173'
-const corsOrigins = corsOriginRaw.split(',').map(s => s.trim())
 const mongoUri = process.env.MONGODB_URI
 const jwtSecret = process.env.JWT_SECRET
 
@@ -171,6 +169,7 @@ app.use(async (req, res, next) => {
     isConnected = false
     connectionPromise = null
     const connected = await connectDB()
+
     if (!connected) {
       return res.status(503).json({ 
         error: 'Database reconnection failed',

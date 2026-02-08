@@ -1,4 +1,3 @@
-import { writeFileSync } from 'fs';
 import { launch } from 'puppeteer';
 
 export async function getPageScrap(url) {

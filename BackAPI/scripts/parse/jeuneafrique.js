@@ -1,4 +1,3 @@
-import { readFileSync, writeFileSync, mkdirSync } from 'fs'
 import { launch } from 'puppeteer'
 
 export async function parseJeuneAfrique(htmlContent) {

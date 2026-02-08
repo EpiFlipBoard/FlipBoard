@@ -11,7 +11,7 @@ export default async function auth(req, res, next) {
     if (!user) return res.status(401).json({ error: 'unauthorized' })
     req.user = user
     next()
-  } catch (e) {
+  } catch {
     return res.status(401).json({ error: 'unauthorized' })
   }
 }

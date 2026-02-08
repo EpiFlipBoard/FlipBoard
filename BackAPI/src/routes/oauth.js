@@ -53,7 +53,7 @@ router.get('/google/callback', async (req, res) => {
     const token = sign(user)
     const target = req.query.origin || DEFAULT_FRONTEND_URL
     return res.redirect(`${target}?token=${encodeURIComponent(token)}`)
-  } catch (e) {
+  } catch {
     return res.status(500).json({ error: 'oauth failed' })
   }
 })
@@ -90,7 +90,7 @@ router.get('/facebook/callback', async (req, res) => {
     const token = sign(user)
     const target = req.query.origin || DEFAULT_FRONTEND_URL
     return res.redirect(`${target}?token=${encodeURIComponent(token)}`)
-  } catch (e) {
+  } catch {
     return res.status(500).json({ error: 'oauth failed' })
   }
 })

@@ -16,7 +16,7 @@ router.get('/search', async (req, res) => {
   const { q, filter } = req.query
   if (!q) return res.json({ posts: [] })
   
-  let query = {}
+  const query = {}
   if (filter === 'author') {
     query.author = { $regex: q, $options: 'i' }
   } else {
@@ -73,94 +73,7 @@ async function fetchOg(url) {
   }
 }
 
-const feedSources = [
-  'https://www.lemonde.fr/rss/une.xml',
-  'https://www.lefigaro.fr/rss/figaro_actualites.xml',
-  'https://www.francetvinfo.fr/titres.rss',
-  'https://www.rfi.fr/fr/rss',
-  'https://www.lexpress.fr/arc/outboundfeeds/rss/alaune.xml',
-]
 
-function stripTags(s) {
-  return (s || '').replace(/<[^>]*>/g, '').trim()
-}
-
-function getTag(xml, tag) {
-  const m = xml.match(new RegExp(`<${tag}[^>]*>([\s\S]*?)<\/${tag}>`, 'i'))
-  return m ? m[1].trim() : ''
-}
-
-function getAttr(xml, tag, attr) {
-  const m = xml.match(new RegExp(`<${tag}[^>]*${attr}=["']([^"']+)["'][^>]*>`, 'i'))
-  return m ? m[1] : ''
-}
-
-function parseRss(xml) {
-  const items = xml.split(/<item[\s\S]*?>/i).slice(1).map(chunk => {
-    const title = stripTags(getTag(chunk, 'title'))
-    const link = stripTags(getTag(chunk, 'link'))
-    const description = stripTags(getTag(chunk, 'description'))
-    const image = getAttr(chunk, 'enclosure', 'url') || getAttr(chunk, 'media:content', 'url') || getAttr(chunk, 'media:thumbnail', 'url')
-    return { title, link, description, imageUrl: image }
-  })
-  return items.filter(i => i.title && i.link)
-}
-
-function parseAtom(xml) {
-  const entries = xml.split(/<entry[\s\S]*?>/i).slice(1).map(chunk => {
-    const title = stripTags(getTag(chunk, 'title'))
-    const link = (() => {
-      const href = getAttr(chunk, 'link', 'href')
-      if (href) return href
-      const m = chunk.match(/<link[^>]*rel=["']alternate["'][^>]*href=["']([^"']+)["'][^>]*>/i)
-      return m ? m[1] : ''
-    })()
-    const description = stripTags(getTag(chunk, 'summary') || getTag(chunk, 'content'))
-    const image = getAttr(chunk, 'media:content', 'url') || getAttr(chunk, 'media:thumbnail', 'url')
-    return { title, link, description, imageUrl: image }
-  })
-  return entries.filter(i => i.title && i.link)
-}
-
-// ANCIEN CODE DE PARSING RSS - EN PAUSE
-// async function refreshSources() {
-//   const limit = 12
-//   console.log('📰 Starting to refresh RSS sources...')
-//   for (const feed of feedSources) {
-//     try {
-//       console.log(`🔄 Fetching ${feed}...`)
-//       const res = await fetch(feed, { headers: { 'User-Agent': 'Mozilla/5.0' } })
-//       const xml = await res.text()
-//       const isAtom = /<feed[\s\S]*?>/i.test(xml)
-//       const items = (isAtom ? parseAtom(xml) : parseRss(xml)).slice(0, limit)
-//       const sourceName = hostname(feed)
-//       console.log(`✅ Found ${items.length} items from ${sourceName}`)
-//       for (const it of items) {
-//         const exists = await Post.findOne({ url: it.link })
-//         if (exists) {
-//           exists.title = it.title
-//           exists.description = it.description || exists.description
-//           exists.imageUrl = it.imageUrl || exists.imageUrl
-//           exists.author = sourceName
-//           exists.type = 'Article'
-//           await exists.save()
-//         } else {
-//           await Post.create({
-//             title: it.title,
-//             type: 'Article',
-//             author: sourceName,
-//             description: it.description,
-//             imageUrl: it.imageUrl || 'https://via.placeholder.com/800x400?text=Article',
-//             url: it.link,
-//           })
-//         }
-//       }
-//     } catch (err) {
-//       console.error(`❌ Error fetching ${feed}:`, err.message)
-//     }
-//   }
-//   console.log('✅ RSS refresh complete!')
-// }
 
 async function refreshSources() {
   try {
@@ -260,7 +173,7 @@ router.post('/refresh/autonews', async (req, res) => {
     }
     const posts = await Post.find({}).sort({ createdAt: -1 })
     res.json({ ok: true, source: 'autonews', imported: Math.min(items.length, limit), posts })
-  } catch (e) {
+  } catch {
     res.status(500).json({ ok: false, source: 'autonews', error: 'failed to import' })
   }
 })
@@ -292,7 +205,7 @@ router.post('/refresh/jeuneafrique', async (req, res) => {
     }
     const posts = await Post.find({}).sort({ createdAt: -1 })
     res.json({ ok: true, source: 'jeuneafrique', imported: Math.min(items.length, limit), posts })
-  } catch (e) {
+  } catch {
     res.status(500).json({ ok: false, source: 'jeuneafrique', error: 'failed to import' })
   }
 })
@@ -409,7 +322,7 @@ router.get('/:id/comments', async (req, res) => {
       total,
       hasMore: skip + comments.length < total
     })
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })

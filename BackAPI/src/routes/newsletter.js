@@ -13,7 +13,7 @@ router.post('/subscribe', async (req, res) => {
     
     await Newsletter.create({ email })
     res.json({ message: 'Subscribed successfully' })
-  } catch (e) {
+  } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })
