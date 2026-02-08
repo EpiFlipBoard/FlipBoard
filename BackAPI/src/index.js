@@ -74,6 +74,7 @@ app.use(express.json())
 // Initialize DB connection
 let isConnected = false
 let connectionPromise = null
+let isPopulating = false // Protection contre les appels multiples
 
 async function connectDB() {
   if (isConnected) return true
@@ -204,6 +205,50 @@ app.get('/api/cron/populate', async (req, res) => {
   }
 })
 
+// Route pour nettoyer les articles en double
+app.get('/api/admin/clean-duplicates', async (req, res) => {
+  try {
+    console.log('🧹 [Clean] Nettoyage des doublons...')
+    
+    // Trouver tous les articles groupés par URL
+    const duplicates = await Post.aggregate([
+      {
+        $group: {
+          _id: '$url',
+          count: { $sum: 1 },
+          ids: { $push: '$_id' }
+        }
+      },
+      {
+        $match: {
+          count: { $gt: 1 }
+        }
+      }
+    ])
+
+    let totalDeleted = 0
+    for (const dup of duplicates) {
+      // Garder le premier, supprimer les autres
+      const toDelete = dup.ids.slice(1)
+      const result = await Post.deleteMany({ _id: { $in: toDelete } })
+      totalDeleted += result.deletedCount
+    }
+
+    const totalArticles = await Post.countDocuments()
+    
+    console.log(`✅ [Clean] ${totalDeleted} doublons supprimés`)
+    res.json({ 
+      success: true, 
+      duplicatesFound: duplicates.length,
+      articlesDeleted: totalDeleted,
+      totalArticles 
+    })
+  } catch (error) {
+    console.error('❌ [Clean] Erreur:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 async function importJeuneAfriqueBatch() {
   try {
     const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
@@ -274,6 +319,14 @@ async function importAutonewsBatch() {
 
 // Fonction pour auto-populer les articles depuis les API news
 async function autoPopulateArticles() {
+  // Protection contre les appels multiples simultanés
+  if (isPopulating) {
+    console.log('⚠️ [Auto-populate] Déjà en cours, appel ignoré')
+    return { saved: 0, updated: 0, total: 0 }
+  }
+  
+  isPopulating = true
+  
   try {
     console.log('🔄 [Auto-populate] Récupération des nouveaux articles...')
     
@@ -295,8 +348,12 @@ async function autoPopulateArticles() {
     })
 
     console.log(`✅ [Auto-populate] ${result.saved} nouveaux articles, ${result.updated} mis à jour (${result.total} total)`)
+    return result
   } catch (error) {
     console.error('❌ [Auto-populate] Erreur:', error.message)
+    return { saved: 0, updated: 0, total: 0 }
+  } finally {
+    isPopulating = false
   }
 }
 
