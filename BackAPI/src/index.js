@@ -126,11 +126,17 @@ async function connectDB() {
         connectionPromise = null
       })
       
-      // Only import data in development (Puppeteer doesn't work on Vercel)
+      // Import data based on environment
       if (process.env.NODE_ENV !== 'production') {
+        // En développement: tout importer
         console.log('🔄 Running initial data import (dev mode)')
         await importAutonewsBatch()
         await importJeuneAfriqueBatch()
+        await autoPopulateArticles()
+      } else {
+        // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
+        console.log('🔄 Running initial auto-populate (production mode)')
+        await autoPopulateArticles()
       }
       
       return true
@@ -292,62 +298,6 @@ async function autoPopulateArticles() {
   } catch (error) {
     console.error('❌ [Auto-populate] Erreur:', error.message)
   }
-}
-
-async function connectDB() {
-  if (isConnected) return true
-  
-  // If connection is already in progress, wait for it
-  if (connectionPromise) return connectionPromise
-  
-  connectionPromise = (async () => {
-    try {
-      await mongoose.connect(mongoUri, {
-        serverSelectionTimeoutMS: 10000,
-        socketTimeoutMS: 45000,
-        maxPoolSize: 10,
-        minPoolSize: 2,
-      })
-      
-      // Wait for connection to be ready
-      let retries = 0
-      while (mongoose.connection.readyState !== 1 && retries < 20) {
-        await new Promise(resolve => setTimeout(resolve, 500))
-        retries++
-      }
-      
-      if (mongoose.connection.readyState !== 1) {
-        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
-      }
-      
-      // Verify connection with ping
-      await mongoose.connection.db.admin().ping()
-      
-      isConnected = true
-      
-      // Import data based on environment
-      if (process.env.NODE_ENV !== 'production') {
-        // En développement: tout importer
-        console.log('🔄 Running initial data import (dev mode)')
-        await importAutonewsBatch()
-        await importJeuneAfriqueBatch()
-        await autoPopulateArticles()
-      } else {
-        // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
-        console.log('🔄 Running initial auto-populate (production mode)')
-        await autoPopulateArticles()
-      }
-      
-      return true
-    } catch (err) {
-      console.error('MongoDB connection failed:', err.message)
-      connectionPromise = null
-      isConnected = false
-      return false
-    }
-  })()
-  
-  return connectionPromise
 }
 
 // For local development

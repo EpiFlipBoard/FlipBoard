@@ -15,9 +15,7 @@ function Follows() {
 
   async function fetchActivity() {
     try {
-      const res = await fetch(`${API_URL}/api/users/me/activity`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await authFetch(`${API_URL}/api/users/me/activity`)
       if (res.ok) {
         const d = await res.json()
         setData(d)

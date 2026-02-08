@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authFetch } from '../lib/auth.js'
-import { getToken, clearAuth } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function CreateArticle() {
