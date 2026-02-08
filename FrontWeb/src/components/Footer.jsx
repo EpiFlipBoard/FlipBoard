@@ -85,14 +85,4 @@ function Footer() {
   )
 }
 
-function SocialIcon({ href, path }) {
-  return (
-    <a href={href} className="bg-white/10 p-2 rounded-full hover:bg-brand-red hover:text-white transition text-white">
-      <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
-        <path d={path} />
-      </svg>
-    </a>
-  )
-}
-
 export default Footer

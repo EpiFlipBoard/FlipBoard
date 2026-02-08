@@ -1,18 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
-const sample = []
-
 function Home() {
   const navigate = useNavigate()
-  const [favorites, setFavorites] = useState(getFavorites())
-  const favIds = useMemo(() => new Set(favorites.map(a => a.id)), [favorites])
-  const categories = ['Explore Spotlight','Inédit','Actualités','Local','Économie','Tech et sciences','Sport']
-  const [selected, setSelected] = useState('Explore Spotlight')
   const user = getUser()
   const [activeCommentPostId, setActiveCommentPostId] = useState(null)
 

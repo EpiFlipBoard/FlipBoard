@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
@@ -8,7 +8,7 @@ function CollectionDetail() {
   const [collection, setCollection] = useState(null)
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
-  const [isSearching, setIsSearching] = useState(false)
+  const [setIsSearching] = useState(false)
 
   async function load() {
     const res = await authFetch(`${API_URL}/api/collections/${id}`)

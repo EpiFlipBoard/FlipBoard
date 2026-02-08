@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { getToken } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function Search() {
