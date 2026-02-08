@@ -82,9 +82,10 @@ async function connectDB() {
   
   connectionPromise = (async () => {
     try {
+      const isTest = process.env.NODE_ENV === 'test'
       const options = {
-        serverSelectionTimeoutMS: 30000, // Augmenté à 30 secondes pour Vercel
-        socketTimeoutMS: 45000,
+        serverSelectionTimeoutMS: isTest ? 5000 : 30000, // Reduced timeout for tests
+        socketTimeoutMS: isTest ? 5000 : 45000,
       }
       
       // For Vercel/serverless: use smaller pool
@@ -100,7 +101,8 @@ async function connectDB() {
       
       // Wait for connection to be ready
       let retries = 0
-      while (mongoose.connection.readyState !== 1 && retries < 30) {
+      const maxRetries = isTest ? 3 : 30
+      while (mongoose.connection.readyState !== 1 && retries < maxRetries) {
         await new Promise(resolve => setTimeout(resolve, 1000))
         retries++
       }
@@ -153,6 +155,12 @@ async function connectDB() {
 }
 
 // For Vercel serverless - connect on first request (BEFORE routes)
+
+// Health check endpoint - defined BEFORE DB middleware to ensure availability
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
+})
+
 app.use(async (req, res, next) => {
   if (!isConnected) {
     console.log('🔌 Connecting to MongoDB...')
@@ -185,10 +193,6 @@ app.use(async (req, res, next) => {
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'FlipBoard API is running' })
-})
-
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
 app.use('/api/auth', authRouter)

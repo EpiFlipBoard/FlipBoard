@@ -29,7 +29,8 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  if (mongoose.connection.readyState !== 0) {
+  // Only attempt to clean up if we are fully connected
+  if (mongoose.connection.readyState === 1) {
     const collections = mongoose.connection.collections;
     for (const key in collections) {
       await collections[key].deleteMany({});
