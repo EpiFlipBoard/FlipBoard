@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getToken } from '../lib/auth.js'
+import { getToken, authFetch } from '../lib/auth.js'
 import { Link } from 'react-router-dom'
 
 export default function Comments({ postId, onClose, isPopup = false }) {
@@ -43,11 +43,10 @@ export default function Comments({ postId, onClose, isPopup = false }) {
 
     setSubmitting(true)
     try {
-      const res = await fetch(`http://localhost:4000/api/posts/${postId}/comments`, {
+      const res = await authFetch(`http://localhost:4000/api/posts/${postId}/comments`, {
         method: 'POST',
         headers: { 
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({ text: newComment })
       })

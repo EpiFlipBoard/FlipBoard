@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getToken } from '../lib/auth.js'
+import { getToken, authFetch } from '../lib/auth.js'
 
 function Author() {
   const { id } = useParams()
@@ -46,9 +46,7 @@ function Author() {
 
   async function fetchMyProfile(targetId) {
     try {
-      const res = await fetch('http://localhost:4000/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
+      const res = await authFetch('http://localhost:4000/api/auth/me')
       const data = await res.json()
       if (res.ok && data.user) {
         setIsFollowing(data.user.following.includes(targetId))
@@ -62,9 +60,8 @@ function Author() {
     if (!token) return alert('Veuillez vous connecter pour suivre un auteur.')
     
     try {
-      const res = await fetch(`http://localhost:4000/api/users/${id}/follow`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await authFetch(`http://localhost:4000/api/users/${id}/follow`, {
+        method: 'POST'
       })
       const data = await res.json()
       if (res.ok) {

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
-import { getToken, getUser } from '../lib/auth.js'
+import { getToken, getUser, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
@@ -105,8 +105,7 @@ function Home() {
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()
-                      const token = getToken()
-                      const res = await fetch(`${API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
+                      const res = await authFetch(`${API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json' } })
                       const data = await res.json()
                       if (res.ok) setPosts(prev => prev.map(p => p.id === a.id ? { ...p, likes: data.likes } : p))
                     }}
@@ -129,8 +128,7 @@ function Home() {
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()
-                      const token = getToken()
-                      await fetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await authFetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST' })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
