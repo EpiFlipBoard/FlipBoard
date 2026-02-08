@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { fr } from 'date-fns/locale'
-import { getToken } from '../lib/auth.js'
+import { getToken, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function Author() {

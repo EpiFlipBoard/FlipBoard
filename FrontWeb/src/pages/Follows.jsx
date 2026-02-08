@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { getToken } from '../lib/auth.js'
+import { authFetch, getToken } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function Follows() {
@@ -14,12 +14,6 @@ function Follows() {
   }, [])
 
   async function fetchActivity() {
-    const token = getToken()
-    if (!token) {
-      setLoading(false)
-      return
-    }
-    
     try {
       const res = await fetch(`${API_URL}/api/users/me/activity`, {
         headers: { Authorization: `Bearer ${token}` }

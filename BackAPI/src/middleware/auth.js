@@ -16,3 +16,6 @@ export default async function auth(req, res, next) {
   }
 }
 
+// Alias for tests
+export const authenticateToken = auth;
+

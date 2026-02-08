@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
+import { API_URL } from '../config.js'
 
 function Article() {
   const { id } = useParams()

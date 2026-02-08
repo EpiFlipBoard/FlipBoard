@@ -1,6 +1,6 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
-import { setAuth, getUser, clearAuth } from '../lib/auth.js'
+import { setAuth, getUser, clearAuth, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function NavBar() {
@@ -40,7 +40,7 @@ function NavBar() {
     const token = params.get('token')
     async function handleToken() {
       if (!token) return
-      const res = await fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      const res = await authFetch(`${API_URL}/api/auth/me`)
       const data = await res.json()
       if (res.ok && data?.user) {
         setAuth(token, data.user)

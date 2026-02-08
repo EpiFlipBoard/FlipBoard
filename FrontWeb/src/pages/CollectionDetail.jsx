@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { getToken } from '../lib/auth.js'
+import { authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function CollectionDetail() {
@@ -11,8 +11,7 @@ function CollectionDetail() {
   const [isSearching, setIsSearching] = useState(false)
 
   async function load() {
-    const token = getToken()
-    const res = await fetch(`${API_URL}/api/collections/${id}`, { headers: { Authorization: `Bearer ${token}` } })
+    const res = await authFetch(`${API_URL}/api/collections/${id}`)
     const data = await res.json()
     if (res.ok) setCollection(data.collection)
   }
@@ -30,10 +29,9 @@ function CollectionDetail() {
   }
 
   async function addToCollection(postId) {
-    const token = getToken()
-    const res = await fetch(`${API_URL}/api/collections/${id}/posts`, {
+    const res = await authFetch(`${API_URL}/api/collections/${id}/posts`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ postId })
     })
     if (res.ok) {

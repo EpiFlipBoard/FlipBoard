@@ -1,0 +1,211 @@
+# .github/workflows/ci-cd.yml
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [ main, production ]
+    paths:
+      - 'BackAPI/**'
+      - '.github/workflows/ci-cd.yml'
+  pull_request:
+    branches: [ main, production ]
+    paths:
+      - 'BackAPI/**'
+
+env:
+  NODE_VERSION: '20'
+  MONGODB_VERSION: '7.0'
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: BackAPI/package-lock.json
+
+      - name: Install dependencies
+        working-directory: BackAPI
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: BackAPI
+        run: npm run lint
+
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: BackAPI/package-lock.json
+
+      - name: Install dependencies
+        working-directory: BackAPI
+        run: npm ci
+
+      - name: Run unit tests
+        working-directory: BackAPI
+        run: npm run test:coverage
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_secret_key_for_ci
+          MONGODB_URI: mongodb://localhost:27017/myflip_test
+
+      - name: Upload coverage reports
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./BackAPI/coverage/lcov.info
+          flags: backend
+          fail_ci_if_error: false
+
+  test-integration:
+    name: Integration Tests with MongoDB
+    runs-on: ubuntu-latest
+    needs: lint
+    
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: BackAPI/package-lock.json
+
+      - name: Install dependencies
+        working-directory: BackAPI
+        run: npm ci
+
+      - name: Wait for MongoDB
+        run: |
+          for i in {1..30}; do
+            if nc -z localhost 27017; then
+              echo "MongoDB is ready!"
+              exit 0
+            fi
+            echo "Waiting for MongoDB... ($i/30)"
+            sleep 2
+          done
+          echo "MongoDB failed to start"
+          exit 1
+
+      - name: Run integration tests
+        working-directory: BackAPI
+        run: npm test
+        env:
+          NODE_ENV: test
+          JWT_SECRET: test_secret_key_for_ci
+          MONGODB_URI: mongodb://localhost:27017/myflip_test
+          PORT: 4001
+
+      - name: Test database connection
+        working-directory: BackAPI
+        run: |
+          node -e "
+          import('mongoose').then(async (mongoose) => {
+            try {
+              await mongoose.default.connect('mongodb://localhost:27017/myflip_test');
+              console.log('✅ MongoDB connection successful');
+              await mongoose.default.connection.close();
+              process.exit(0);
+            } catch (error) {
+              console.error('❌ MongoDB connection failed:', error);
+              process.exit(1);
+            }
+          });
+          "
+
+  build-verify:
+    name: Build Verification
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-integration]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: BackAPI/package-lock.json
+
+      - name: Install dependencies
+        working-directory: BackAPI
+        run: npm ci
+
+      - name: Verify build
+        working-directory: BackAPI
+        run: npm run build
+
+      - name: Check for security vulnerabilities
+        working-directory: BackAPI
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Verify environment configuration
+        working-directory: BackAPI
+        run: |
+          echo "✅ Checking required files..."
+          test -f package.json && echo "✓ package.json exists"
+          test -f src/index.js && echo "✓ src/index.js exists"
+          test -f vercel.json && echo "✓ vercel.json exists"
+          echo "✅ Build verification passed"
+
+  deploy-check:
+    name: Deployment Check
+    runs-on: ubuntu-latest
+    needs: build-verify
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/production'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check Vercel configuration
+        working-directory: BackAPI
+        run: |
+          if [ -f vercel.json ]; then
+            echo "✅ Vercel configuration found"
+            cat vercel.json
+          else
+            echo "⚠️ No vercel.json found"
+            exit 1
+          fi
+
+      - name: Deployment ready
+        run: |
+          echo "✅ All checks passed!"
+          echo "🚀 Ready for deployment to Vercel"
+          echo "📝 Deployment will be handled by Vercel's GitHub integration"

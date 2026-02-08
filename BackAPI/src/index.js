@@ -18,6 +18,7 @@ import Post from './models/Post.js'
 import { parseAutonews } from '../scripts/parse/autonews.js'
 import { parseJeuneAfrique } from '../scripts/parse/jeuneafrique.js'
 import { getPageScrap } from '../scripts/saveRenderedHTML.js'
+import { fetchAndSaveArticles } from '../apis/aggregator.js'
 
 dotenv.config()
 
@@ -185,6 +186,18 @@ app.use('/api/collections', collectionsRouter)
 app.use('/api/users', usersRouter)
 app.use('/api/newsletter', newsletterRouter)
 
+// Route pour le cron job d'auto-population
+app.get('/api/cron/populate', async (req, res) => {
+  try {
+    console.log('🔄 [Cron] Déclenchement de l\'auto-populate...')
+    await autoPopulateArticles()
+    res.json({ success: true, message: 'Articles mis à jour avec succès' })
+  } catch (error) {
+    console.error('❌ [Cron] Erreur:', error)
+    res.status(500).json({ success: false, error: error.message })
+  }
+})
+
 async function importJeuneAfriqueBatch() {
   try {
     const items = await parseJeuneAfrique(await getPageScrap('https://www.jeuneafrique.com'))
@@ -253,14 +266,105 @@ async function importAutonewsBatch() {
   }
 }
 
+// Fonction pour auto-populer les articles depuis les API news
+async function autoPopulateArticles() {
+  try {
+    console.log('🔄 [Auto-populate] Récupération des nouveaux articles...')
+    
+    const apiKeys = {
+      newsapi: process.env.NEWSAPI_KEY,
+      guardian: process.env.GUARDIAN_API_KEY,
+      nytimes: process.env.NYTIMES_API_KEY
+    }
+
+    // Configuration des sources
+    const sources = ['rss'] // RSS est gratuit
+    if (apiKeys.newsapi) sources.push('newsapi')
+    if (apiKeys.guardian) sources.push('guardian')
+    if (apiKeys.nytimes) sources.push('nytimes')
+
+    const result = await fetchAndSaveArticles(Post, apiKeys, {
+      sources,
+      pageSize: 15
+    })
+
+    console.log(`✅ [Auto-populate] ${result.saved} nouveaux articles, ${result.updated} mis à jour (${result.total} total)`)
+  } catch (error) {
+    console.error('❌ [Auto-populate] Erreur:', error.message)
+  }
+}
+
+// Initialize DB connection
+let isConnected = false
+let connectionPromise = null
+
+async function connectDB() {
+  if (isConnected) return true
+  
+  // If connection is already in progress, wait for it
+  if (connectionPromise) return connectionPromise
+  
+  connectionPromise = (async () => {
+    try {
+      await mongoose.connect(mongoUri, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+        maxPoolSize: 10,
+        minPoolSize: 2,
+      })
+      
+      // Wait for connection to be ready
+      let retries = 0
+      while (mongoose.connection.readyState !== 1 && retries < 20) {
+        await new Promise(resolve => setTimeout(resolve, 500))
+        retries++
+      }
+      
+      if (mongoose.connection.readyState !== 1) {
+        throw new Error(`Connection readyState is ${mongoose.connection.readyState}, expected 1`)
+      }
+      
+      // Verify connection with ping
+      await mongoose.connection.db.admin().ping()
+      
+      isConnected = true
+      
+      // Import data based on environment
+      if (process.env.NODE_ENV !== 'production') {
+        // En développement: tout importer
+        console.log('🔄 Running initial data import (dev mode)')
+        await importAutonewsBatch()
+        await importJeuneAfriqueBatch()
+        await autoPopulateArticles()
+      } else {
+        // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
+        console.log('🔄 Running initial auto-populate (production mode)')
+        await autoPopulateArticles()
+      }
+      
+      return true
+    } catch (err) {
+      console.error('MongoDB connection failed:', err.message)
+      connectionPromise = null
+      isConnected = false
+      return false
+    }
+  })()
+  
+  return connectionPromise
+}
+
 // For local development
 if (process.env.NODE_ENV !== 'production') {
   connectDB().then(() => {
     app.listen(port, () => {
       console.log(`API on http://localhost:${port}`)
+      console.log('⏰ Auto-populate activé: toutes les heures')
     })
     setInterval(importAutonewsBatch, 10 * 60 * 1000)
     setInterval(importJeuneAfriqueBatch, 10 * 60 * 1000)
+    // Auto-populate les articles toutes les heures
+    setInterval(autoPopulateArticles, 60 * 60 * 1000)
   })
 }
 

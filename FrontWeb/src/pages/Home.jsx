@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
-import { getToken, getUser } from '../lib/auth.js'
+import { getToken, getUser, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 import Comments from '../components/Comments.jsx'
 
@@ -133,8 +133,7 @@ function Home() {
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()
-                      const token = getToken()
-                      await fetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST', headers: { Authorization: `Bearer ${token}` } })
+                      await authFetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST' })
                       alert('Ajouté à votre collection')
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
@@ -146,7 +145,16 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       const url = a.url || `${window.location.origin}`
-                      if (navigator.share) { try { await navigator.share({ title: a.title, text: a.summary, url }) } catch {} } else { await navigator.clipboard.writeText(url); alert('Lien copié') }
+                      if (navigator.share) { 
+                        try { 
+                          await navigator.share({ title: a.title, text: a.summary, url }) 
+                        } catch (err) {
+                          console.log('Share failed', err)
+                        } 
+                      } else { 
+                        await navigator.clipboard.writeText(url); 
+                        alert('Lien copié') 
+                      }
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
                     title="Partager"

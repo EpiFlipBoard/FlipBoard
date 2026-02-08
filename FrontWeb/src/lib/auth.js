@@ -25,3 +25,29 @@ export function getUserInitial(user) {
   const src = name || user?.email || ''
   return src ? src.trim().charAt(0).toUpperCase() : ''
 }
+
+/**
+ * Wrapper pour fetch qui gère automatiquement l'expiration du token
+ * Si le serveur retourne 401, déconnecte l'utilisateur et recharge la page
+ */
+export async function authFetch(url, options = {}) {
+  const token = getToken()
+  
+  // Ajouter automatiquement le header Authorization si un token existe
+  const headers = {
+    ...options.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {})
+  }
+  
+  const response = await fetch(url, { ...options, headers })
+  
+  // Si 401 (non autorisé), c'est probablement que le token a expiré
+  if (response.status === 401) {
+    clearAuth()
+    alert('Votre session a expiré. Veuillez vous reconnecter.')
+    window.location.href = '/'
+    throw new Error('Session expired')
+  }
+  
+  return response
+}
