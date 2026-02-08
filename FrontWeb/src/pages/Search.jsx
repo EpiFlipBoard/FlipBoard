@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { getToken } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function Search() {
+  const { t, i18n } = useTranslation()
   const location = useLocation()
   const navigate = useNavigate()
   const [q, setQ] = useState('')
@@ -51,18 +53,18 @@ function Search() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-8 text-white">Recherche</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">{t('search.title')}</h1>
       <div className="mb-10 flex flex-col md:flex-row gap-4">
         <div className="flex-1">
           <input
             value={q}
             onChange={e => setQ(e.target.value)}
-            placeholder="Rechercher des articles..."
-            className="w-full bg-black/40 text-white border border-white/20 rounded-lg px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-brand-red placeholder-white/50"
+            placeholder={t('search.placeholder')}
+            className="w-full bg-white dark:bg-black/40 text-gray-900 dark:text-white border border-gray-300 dark:border-white/20 rounded-lg px-6 py-4 text-lg focus:outline-none focus:ring-2 focus:ring-brand-red placeholder-gray-500 dark:placeholder-white/50"
           />
         </div>
-        <div className="flex items-center gap-4 bg-black/40 border border-white/20 rounded-lg px-4">
-          <label className="flex items-center gap-2 cursor-pointer text-white">
+        <div className="flex items-center gap-4 bg-white dark:bg-black/40 border border-gray-300 dark:border-white/20 rounded-lg px-4">
+          <label className="flex items-center gap-2 cursor-pointer text-gray-900 dark:text-white">
             <input 
               type="radio" 
               name="filter" 
@@ -71,9 +73,9 @@ function Search() {
               onChange={() => handleFilterChange('title')}
               className="accent-brand-red w-5 h-5"
             />
-            <span>Titre</span>
+            <span>{t('search.filter_title')}</span>
           </label>
-          <label className="flex items-center gap-2 cursor-pointer text-white">
+          <label className="flex items-center gap-2 cursor-pointer text-gray-900 dark:text-white">
             <input 
               type="radio" 
               name="filter" 
@@ -82,22 +84,22 @@ function Search() {
               onChange={() => handleFilterChange('author')}
               className="accent-brand-red w-5 h-5"
             />
-            <span>Auteur</span>
+            <span>{t('search.filter_author')}</span>
           </label>
         </div>
       </div>
 
-      {loading && <div className="text-white text-center py-10">Recherche en cours...</div>}
+      {loading && <div className="text-gray-900 dark:text-white text-center py-10">{t('search.loading')}</div>}
       
       {!loading && results.length === 0 && q && (
-        <div className="text-white/70 text-lg">Aucun résultat trouvé pour "{q}"</div>
+        <div className="text-gray-600 dark:text-white/70 text-lg">{t('search.no_results', { query: q })}</div>
       )}
 
       <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {results.map(a => (
           <article
             key={a._id}
-            className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full hover:-translate-y-1 transition-transform duration-300"
+            className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white dark:bg-gray-800 flex flex-col h-full hover:-translate-y-1 transition-transform duration-300"
             onClick={() => { 
               if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') 
               else navigate(`/article/${a._id}`)
@@ -112,13 +114,13 @@ function Search() {
               </div>
             )}
             <div className="p-5 flex flex-col flex-1">
-              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">{a.type || 'Article'}</div>
-              <h2 className="text-xl font-bold text-gray-900 mb-2 leading-tight break-words">{a.title}</h2>
+              <div className="text-xs uppercase tracking-wide text-gray-500 mb-2">{a.type || t('search.type_article')}</div>
+              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 leading-tight break-words">{a.title}</h2>
               {a.author && <div className="text-sm text-brand-red font-semibold mb-2">{a.author}</div>}
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3 break-words flex-1">{a.description || a.summary}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 break-words flex-1">{a.description || a.summary}</p>
               
-              <div className="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between">
-                <span className="text-xs text-gray-400">{new Date(a.createdAt).toLocaleDateString()}</span>
+              <div className="mt-auto pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <span className="text-xs text-gray-400">{new Date(a.createdAt).toLocaleDateString(i18n.language)}</span>
                 {a.url ? (
                    <a
                      href={a.url}
@@ -127,7 +129,7 @@ function Search() {
                      className="btn btn-primary text-xs px-3 py-1.5"
                      onClick={(e) => e.stopPropagation()}
                    >
-                     Lire à la source
+                     {t('search.read_source')}
                    </a>
                 ) : (
                   <Link 
@@ -135,7 +137,7 @@ function Search() {
                     className="btn btn-primary text-xs px-3 py-1.5"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Lire l'article
+                    {t('search.read_article')}
                   </Link>
                 )}
               </div>

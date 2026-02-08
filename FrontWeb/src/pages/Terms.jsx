@@ -1,23 +1,26 @@
+import { useTranslation } from 'react-i18next'
+
 function Terms() {
+  const { t } = useTranslation()
   return (
-    <div className="max-w-3xl mx-auto py-16 px-4 text-white">
-      <h1 className="text-4xl font-bold mb-8">Conditions d'utilisation</h1>
-      <div className="prose prose-invert prose-lg">
-        <p className="text-white/80">En vigueur depuis le : 1 Janvier 2026</p>
+    <div className="max-w-3xl mx-auto py-16 px-4 text-gray-900 dark:text-white">
+      <h1 className="text-4xl font-bold mb-8">{t('terms.title')}</h1>
+      <div className="prose dark:prose-invert prose-lg">
+        <p className="text-gray-600 dark:text-white/80">{t('terms.effective_date')}</p>
         
-        <h3>1. Acceptation des conditions</h3>
+        <h3>{t('terms.acceptance_title')}</h3>
         <p>
-          En accédant à EPI-FLIPBOARD, vous acceptez d'être lié par ces conditions d'utilisation et toutes les lois applicables.
+          {t('terms.acceptance_body')}
         </p>
 
-        <h3>2. Utilisation du service</h3>
+        <h3>{t('terms.usage_title')}</h3>
         <p>
-          Vous vous engagez à utiliser le service de manière légale et respectueuse. Tout contenu offensant ou illégal sera supprimé.
+          {t('terms.usage_body')}
         </p>
 
-        <h3>3. Propriété intellectuelle</h3>
+        <h3>{t('terms.ip_title')}</h3>
         <p>
-          Tout le contenu original présent sur la plateforme reste la propriété d'EPI-FLIPBOARD ou de ses créateurs respectifs.
+          {t('terms.ip_body')}
         </p>
       </div>
     </div>

@@ -4,7 +4,7 @@ import Footer from './components/Footer.jsx'
 
 function App() {
   return (
-    <div className="min-h-screen bg-brand-dark flex flex-col">
+    <div className="min-h-screen bg-white dark:bg-brand-dark flex flex-col">
       <NavBar />
       <main className="max-w-6xl mx-auto p-4 w-full flex-1">
         <Outlet />

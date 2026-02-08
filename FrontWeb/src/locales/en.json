@@ -1,0 +1,281 @@
+{
+  "nav": {
+    "for_you": "For You",
+    "todays_edition": "Today's Edition",
+    "edit": "Edit",
+    "explore_more": "Explore More",
+    "search_placeholder": "Search EPI-Flipboard",
+    "create_article": "Create Article",
+    "following": "Following",
+    "account": "Account",
+    "statistics": "Statistics",
+    "settings": "Settings",
+    "dark_mode": "Dark Mode",
+    "logout": "Logout",
+    "newsletter": "Newsletter",
+    "signup": "Sign Up",
+    "login": "Login",
+    "brand_slogan": "Stay informed. Always inspired.",
+    "follow_topics": "Follow topics",
+    "curate_stories": "Curate stories",
+    "share_ideas": "Share ideas"
+  },
+  "auth": {
+    "login_title": "Login to EPI-FLIPBOARD",
+    "register_title": "Join EPI-FLIPBOARD",
+    "email_label": "Email",
+    "password_label": "Password",
+    "name_label": "Full Name",
+    "login_button": "Login",
+    "logging_in": "Logging in...",
+    "register_button": "Sign Up",
+    "creating": "Creating...",
+    "continue": "Continue",
+    "continue_google": "Continue with Google",
+    "continue_apple": "Continue with Apple",
+    "forgot_password": "Forgot password?",
+    "no_account": "New to EPI-FLIPBOARD?",
+    "has_account": "Already have an account?",
+    "signup_link": "Create an account",
+    "login_link": "Login",
+    "terms_privacy": "By continuing, you agree to the Terms of Service and Privacy Policy.",
+    "session_expired": "Your session has expired. Please log in again.",
+    "login_failed": "Login failed",
+    "register_failed": "Registration failed"
+  },
+  "home": {
+    "hero_title_1": "STAY INFORMED",
+    "hero_title_2": "FIND INSPIRATION",
+    "hero_subtitle": "Stories curated for you",
+    "create_account": "Create Account",
+    "create_article": "Create Article",
+    "random_article": "Random Discovery",
+    "no_random_article": "No random article found",
+    "error_random": "Error fetching random article",
+    "loading": "Loading...",
+    "read_source": "Read at source",
+    "read_article": "Read article",
+    "please_login_like": "Please login to like an article",
+    "added_to_collection": "Added to your collection",
+    "link_copied": "Link copied",
+    "like_tooltip": "Like",
+    "comments_tooltip": "Comments",
+    "collect_tooltip": "Add to collection",
+    "share_tooltip": "Share"
+  },
+  "footer": {
+    "description": "Your daily source of inspiration and information. Discover stories that matter to you.",
+    "subscribe_label": "Subscribe to newsletter",
+    "email_placeholder": "Your email",
+    "ok": "OK",
+    "discover": "Discover",
+    "home": "Home",
+    "newsletter": "Newsletter",
+    "company": "Company",
+    "about": "About",
+    "create_article": "Create Article",
+    "help": "Help",
+    "help_center": "Help Center",
+    "privacy": "Privacy",
+    "terms": "Terms of Service",
+    "rights_reserved": "All rights reserved.",
+    "subscribe_success": "Thanks for subscribing!",
+    "error_occurred": "An error occurred."
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Add a comment...",
+    "submit": "Comment",
+    "submitting": "Sending...",
+    "login_required": "Please log in to comment.",
+    "loading": "Loading...",
+    "no_comments": "No comments yet.",
+    "unknown_user": "Unknown user",
+    "previous": "Previous",
+    "next": "Next",
+    "page_info": "Page {{page}} of {{total}}"
+  },
+  "article": {
+    "loading": "Loading...",
+    "not_found": "Article not found",
+    "back_home": "Back to home"
+  },
+  "profile": {
+    "default_user": "User",
+    "collections": "Collections",
+    "create_collection": "Create collection",
+    "collection_name_prompt": "Collection name:",
+    "private_collection_confirm": "Do you want to create a private collection?",
+    "edit_collection": "Edit",
+    "no_collections": "No collections yet."
+  },
+  "create_article": {
+    "title": "Create Article",
+    "form_title": "Title",
+    "form_description": "Short description",
+    "form_image_url": "Cover image URL",
+    "form_content": "Content",
+    "publish": "Publish",
+    "cancel": "Cancel",
+    "error_create": "Failed to create article"
+  },
+  "search": {
+    "title": "Search",
+    "placeholder": "Search for articles...",
+    "filter_title": "Title",
+    "filter_author": "Author",
+    "loading": "Searching...",
+    "no_results": "No results found for \"{{query}}\"",
+    "type_article": "Article",
+    "read_source": "Read at source",
+    "read_article": "Read article"
+  },
+  "collection_detail": {
+    "added_success": "Article added to collection",
+    "loading": "Loading...",
+    "add_articles": "Add articles",
+    "search_placeholder": "Search for an article...",
+    "search_button": "Search",
+    "add_button": "Add +",
+    "articles_in_collection": "Articles in this collection",
+    "empty_collection": "This collection is empty. Search for articles above to add them."
+  },
+  "settings": {
+    "tabs": {
+      "profile": "Profile Settings",
+      "newsletters": "Newsletter Subscriptions",
+      "content": "Content Options"
+    },
+    "profile": {
+      "header": "ACCOUNT SETTINGS",
+      "name": "Name",
+      "username": "Username",
+      "email": "Email",
+      "bio": "Bio",
+      "private_account": "Private account",
+      "avatar": "Avatar",
+      "save": "Save"
+    },
+    "newsletters": {
+      "header": "NEWSLETTER SUBSCRIPTIONS",
+      "subscribe_all": "Subscribe to all",
+      "unsubscribe_all": "Unsubscribe from all"
+    },
+    "content": {
+      "header": "CONTENT OPTIONS",
+      "muted_sources": "Muted sources and domains",
+      "no_muted": "You haven't muted any sources",
+      "blocked_profiles": "Blocked profiles",
+      "no_blocked": "You haven't blocked anyone"
+    }
+  },
+  "edit_collection": {
+    "title": "Edit Collection",
+    "name": "Name",
+    "description": "Description",
+    "cover_image": "Cover image (URL)",
+    "private": "Private",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "author": {
+    "loading": "Loading...",
+    "not_found": "Author not found.",
+    "login_to_follow": "Please login to follow an author.",
+    "member_since": "Member since {{year}}",
+    "external_source": "External Source",
+    "following": "Following",
+    "follow": "Follow",
+    "published_articles": "Published Articles",
+    "no_articles": "No articles published yet."
+  },
+  "favorites": {
+    "title": "Favorites",
+    "empty": "No saved articles",
+    "read": "Read"
+  },
+  "follows": {
+    "header": "FOLLOWING & ACTIVITY",
+    "login_title": "Login to see your activity",
+    "login_button": "Login",
+    "loading": "Loading...",
+    "tabs": {
+      "following": "Following",
+      "likes": "Likes",
+      "comments": "Comments"
+    },
+    "no_following": "You are not following anyone yet.",
+    "discover_authors": "Discover authors",
+    "recent_articles": "Recent articles from following",
+    "liked_articles": "Liked articles",
+    "commented_articles": "Commented articles",
+    "no_articles": "No articles found."
+  },
+  "statistics": {
+    "no_data": "NO DATA AVAILABLE"
+  },
+  "about": {
+    "title": "About EPI-FLIPBOARD",
+    "intro": "EPI-FLIPBOARD is your destination to discover, collect, and share stories that matter to you.",
+    "mission": "Our mission is to inform and inspire the world through quality storytelling. We bring together content from the best publishers, journalists, and creators to offer you a unique perspective on topics you love.",
+    "history_title": "Our History",
+    "history_body": "Founded with the vision to transform how people consume information, EPI-FLIPBOARD has become a go-to platform for millions of users worldwide."
+  },
+  "help": {
+    "title": "Help Center",
+    "search_placeholder": "How can we help you?",
+    "categories": {
+      "getting_started": {
+        "title": "Getting Started",
+        "items": ["Create account", "Setup profile", "Follow topics"]
+      },
+      "your_account": {
+        "title": "Your Account",
+        "items": ["Manage settings", "Security", "Notifications"]
+      },
+      "magazines": {
+        "title": "Magazines",
+        "items": ["Create magazine", "Add articles", "Share"]
+      }
+    }
+  },
+  "newsletter": {
+    "title": "Newsletter",
+    "description": "Sign up to receive the best articles.",
+    "email_placeholder": "Your email",
+    "subscribe": "Sign Up"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "last_updated": "Last updated: January 12, 2026",
+    "intro_title": "1. Introduction",
+    "intro_body": "At EPI-FLIPBOARD, we take your privacy very seriously. This policy describes how we collect, use, and protect your personal information.",
+    "collection_title": "2. Data Collection",
+    "collection_body": "We collect information you provide directly (name, email) as well as usage data to improve your experience.",
+    "usage_title": "3. Data Usage",
+    "usage_body": "Your data is used to personalize your feed, send relevant updates, and ensure account security."
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "effective_date": "Effective date: January 1, 2026",
+    "acceptance_title": "1. Acceptance of Terms",
+    "acceptance_body": "By accessing EPI-FLIPBOARD, you agree to be bound by these terms of use and all applicable laws.",
+    "usage_title": "2. Service Usage",
+    "usage_body": "You agree to use the service in a lawful and respectful manner. Any offensive or illegal content will be removed.",
+    "ip_title": "3. Intellectual Property",
+    "ip_body": "All original content on the platform remains the property of EPI-FLIPBOARD or its respective creators."
+  },
+  "admin": {
+    "title": "Admin Dashboard",
+    "description": "Manage sources, view stats, and configure ingestion."
+  }
+}

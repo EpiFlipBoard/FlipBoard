@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { toggleFavorite, getFavorites } from '../lib/storage.js'
 import { getToken, getUser, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
@@ -8,6 +9,7 @@ import Comments from '../components/Comments.jsx'
 const sample = []
 
 function Home() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [favorites, setFavorites] = useState(getFavorites())
   const favIds = useMemo(() => new Set(favorites.map(a => a.id)), [favorites])
@@ -20,6 +22,22 @@ function Home() {
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(true)
   const [loading, setLoading] = useState(false)
+
+  async function handleRandom() {
+    try {
+      const res = await fetch(`${API_URL}/api/posts/random`)
+      if (!res.ok) throw new Error('Failed')
+      const data = await res.json()
+      if (data && data.url) {
+        window.open(data.url, '_blank', 'noopener,noreferrer')
+      } else {
+        alert(t('home.no_random_article'))
+      }
+    } catch (e) {
+      console.error(e)
+      alert(t('home.error_random'))
+    }
+  }
 
   useEffect(() => {
     async function load() {
@@ -64,13 +82,16 @@ function Home() {
 
   return (
     <div>
-      <section className="text-center pt-28 bg-brand-dark text-white">
+      <section className="text-center pt-28 bg-white dark:bg-brand-dark text-gray-900 dark:text-white transition-colors duration-200">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-6xl md:text-6xl font-extrabold leading-tight">RESTEZ INFORMÉS<br/>TROUVEZ DE L'INSPIRATION</h1>
+          <h1 className="text-6xl md:text-6xl font-extrabold leading-tight">{t('home.hero_title_1')}<br/>{t('home.hero_title_2')}</h1>
           <div className="h-3 bg-brand-blue w-full mx-auto my-4" />
-          <p className="text-white/80 text-2xl">Histoires sélectionnées pour vous</p>
-          {!user && <Link to="/signup" className="mt-12 mb-20 inline-flex btn btn-primary text-lg px-8 py-4">Créer un compte</Link>}
-          {user && <Link to="/create" className="mt-8 inline-flex btn btn-primary text-lg px-8 py-3">Créer un article</Link>}
+          <p className="text-gray-600 dark:text-white/80 text-2xl">{t('home.hero_subtitle')}</p>
+          <div className="flex flex-wrap justify-center gap-4 mt-8 mb-12">
+            {!user && <Link to="/signup" className="inline-flex btn btn-primary text-lg px-8 py-3">{t('home.create_account')}</Link>}
+            {user && <Link to="/create" className="inline-flex btn btn-primary text-lg px-8 py-3">{t('home.create_article')}</Link>}
+            <button onClick={handleRandom} className="inline-flex btn btn-muted text-lg px-8 py-3">{t('home.random_article')}</button>
+          </div>
         </div>
       </section>
 
@@ -80,7 +101,7 @@ function Home() {
           {posts.map(a => (
             <article
               key={a.id}
-              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white flex flex-col h-full"
+              className="rounded-xl overflow-hidden shadow-magazine cursor-pointer bg-white dark:bg-gray-800 transition-colors duration-200 flex flex-col h-full"
               onClick={() => { 
                 if (a.url) window.open(a.url, '_blank', 'noopener,noreferrer') 
                 else navigate(`/article/${a.id}`)
@@ -89,9 +110,9 @@ function Home() {
               <img src={a.imageUrl} alt={a.title} className="w-full h-56 object-cover" />
               <div className="p-4 flex flex-col flex-1">
                 <div className="text-xs uppercase tracking-wide text-gray-500">{a.category}</div>
-                <h2 className="text-xl font-bold text-gray-900 mt-1 break-words" dangerouslySetInnerHTML={{ __html: a.title }} />
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white mt-1 break-words" dangerouslySetInnerHTML={{ __html: a.title }} />
                 <div 
-                  className="text-sm text-gray-600 hover:text-brand-red hover:underline"
+                  className="text-sm text-gray-600 dark:text-gray-400 hover:text-brand-red hover:underline"
                   onClick={(e) => {
                     e.stopPropagation()
                     // Use authorId if available, otherwise use source name
@@ -101,13 +122,13 @@ function Home() {
                 >
                   {a.source}
                 </div>
-                <p className="mt-2 text-sm text-gray-700 break-words" dangerouslySetInnerHTML={{ __html: a.summary }} />
+                <p className="mt-2 text-sm text-gray-700 dark:text-gray-300 break-words" dangerouslySetInnerHTML={{ __html: a.summary }} />
                 <div className="mt-auto pt-4 flex items-center gap-3">
                   <button
                     onClick={async (e) => {
                       e.stopPropagation()
                       const token = getToken()
-                      if (!token) return alert('Veuillez vous connecter pour aimer un article')
+                      if (!token) return alert(t('home.please_login_like'))
                       const res = await fetch(`${API_URL}/api/posts/${a.id}/like`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` } })
                       const data = await res.json()
                       if (res.ok) {
@@ -115,7 +136,7 @@ function Home() {
                       }
                     }}
                     className={`inline-flex items-center gap-1 ${(a.likedBy || []).includes(user?.id) ? 'text-red-500' : 'text-gray-600'} hover:text-red-500`}
-                    title="J'aime"
+                    title={t('home.like_tooltip')}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill={((a.likedBy || []).includes(user?.id)) ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.74 0 3.41 1.01 4.13 2.44C11.09 5.01 12.76 4 14.5 4 17 4 19 6 19 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                     <span>{a.likes}</span>
@@ -126,7 +147,7 @@ function Home() {
                       setActiveCommentPostId(a.id)
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
-                    title="Commentaires"
+                    title={t('home.comments_tooltip')}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M21 6h-18v12h4v4l4-4h10z"/></svg>
                   </button>
@@ -134,10 +155,10 @@ function Home() {
                     onClick={async (e) => {
                       e.stopPropagation()
                       await authFetch(`${API_URL}/api/posts/${a.id}/collect`, { method: 'POST' })
-                      alert('Ajouté à votre collection')
+                      alert(t('home.added_to_collection'))
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
-                    title="Ajouter à la collection"
+                    title={t('home.collect_tooltip')}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M3 3h18v2H3zm0 4h12v2H3zm0 4h18v2H3zm0 4h12v2H3z"/></svg>
                   </button>
@@ -153,11 +174,11 @@ function Home() {
                         } 
                       } else { 
                         await navigator.clipboard.writeText(url); 
-                        alert('Lien copié') 
+                        alert(t('home.link_copied')) 
                       }
                     }}
                     className="inline-flex items-center gap-1 text-gray-600 hover:text-gray-900"
-                    title="Partager"
+                    title={t('home.share_tooltip')}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11C16.56 7.62 17.24 7.92 18 7.92c1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.07 9.63C7.56 9.16 6.88 8.86 6.12 8.86c-1.66 0-3 1.34-3 3s1.34 3 3 3c.76 0 1.44-.3 1.95-.77l7.14 4.16c-.05.21-.09.43-.09.65 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
                   </button>
@@ -168,20 +189,20 @@ function Home() {
                       rel="noopener noreferrer"
                       className="ml-auto btn btn-primary"
                       onClick={(e) => e.stopPropagation()}
-                    >Lire à la source</a>
+                    >{t('home.read_source')}</a>
                   ) : (
                     <Link
                       to={`/article/${a.id}`}
                       className="ml-auto btn btn-primary"
                       onClick={(e) => e.stopPropagation()}
-                    >Lire l'article</Link>
+                    >{t('home.read_article')}</Link>
                   )}
                 </div>
               </div>
             </article>
           ))}
         </div>
-        {loading && <div className="text-center pb-10 text-gray-500">Chargement...</div>}
+        {loading && <div className="text-center pb-10 text-gray-500">{t('home.loading')}</div>}
       </div>
       
       {activeCommentPostId && (

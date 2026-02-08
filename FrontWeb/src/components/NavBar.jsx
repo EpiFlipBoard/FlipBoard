@@ -1,9 +1,12 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { setAuth, getUser, clearAuth, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
+import { useTheme } from './ThemeProvider.jsx'
 
 function NavBar() {
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
   const [q, setQ] = useState('')
@@ -20,7 +23,14 @@ function NavBar() {
   const [regLoading, setRegLoading] = useState(false)
   const [regError, setRegError] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
+  const { theme, toggleTheme } = useTheme()
   const user = getUser()
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language.startsWith('fr') ? 'en' : 'fr'
+    i18n.changeLanguage(newLang)
+  }
+
   useEffect(() => {
     if (location.pathname === '/login') {
       setMode('login')
@@ -63,7 +73,7 @@ function NavBar() {
         body: JSON.stringify({ email: loginEmail.toLowerCase(), password: loginPassword })
       })
       const data = await res.json()
-      if (!res.ok) { throw new Error(data?.error || 'Login failed') }
+      if (!res.ok) { throw new Error(data?.error || t('auth.login_failed')) }
       setAuth(data.token, data.user)
       setAuthOpen(false)
       navigate('/', { replace: true })
@@ -86,7 +96,7 @@ function NavBar() {
         body: JSON.stringify({ name: regName, email: regEmail.toLowerCase(), password: regPassword })
       })
       const data = await res.json()
-      if (!res.ok) { throw new Error(data?.error || 'Register failed') }
+      if (!res.ok) { throw new Error(data?.error || t('auth.register_failed')) }
       setAuth(data.token, data.user)
       setAuthOpen(false)
       navigate('/', { replace: true })
@@ -98,7 +108,7 @@ function NavBar() {
     }
   }
   return (
-    <header className={`sticky top-0 z-40 bg-brand-dark shadow border-b border-brand-blue ${user ? '' : 'py-3'}`}>
+    <header className={`sticky top-0 z-40 bg-white dark:bg-brand-dark shadow border-b border-gray-200 dark:border-brand-blue transition-colors duration-200 ${user ? '' : 'py-3'}`}>
       <div className="mr-10 flex items-center justify-between">
         {user ? (
           <div className="flex items-center gap-6">
@@ -106,15 +116,15 @@ function NavBar() {
               <img src="/logo.png" alt="Logo" className="h-16 w-16" />
             </Link>
             <Link to="/" className="flex items-center gap-2">
-              <button className="nav-link">Pour vous</button>
+              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white">{t('nav.for_you')}</button>
             </Link>
-            <button className="nav-link">Édition du jour</button>
+            <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white">{t('nav.todays_edition')}</button>
             <div className="relative">
-              <button className="nav-link" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
+              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
               {menuOpen && (
-                <div className="absolute mt-2 w-40 bg-white text-brand-dark rounded shadow p-2">
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Modifier</button>
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100" onClick={() => setMenuOpen(false)}>Explorer plus</button>
+                <div className="absolute mt-2 w-40 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded shadow p-2 border border-gray-200 dark:border-gray-700">
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => setMenuOpen(false)}>{t('nav.edit')}</button>
+                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => setMenuOpen(false)}>{t('nav.explore_more')}</button>
                 </div>
               )}
             </div>
@@ -122,10 +132,16 @@ function NavBar() {
         ) : (
           <Link to="/" className="flex items-center gap-3">
             <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded" />
-            <span className="text-xl font-bold text-white">EPI-FLIPBOARD</span>
+            <span className="text-xl font-bold text-gray-900 dark:text-white">EPI-FLIPBOARD</span>
           </Link>
         )}
         <nav className="flex gap-6 text-sm items-center">
+          <button onClick={toggleLanguage} className="p-2 rounded hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-white transition-colors font-medium">
+            {i18n.language.startsWith('fr') ? 'EN' : 'FR'}
+          </button>
+          <button onClick={toggleTheme} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 dark:text-white transition-colors" title={theme === 'dark' ? t('nav.dark_mode') : t('nav.dark_mode')}>
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
           {user ? (
             <>
               <div className="hidden md:flex items-center">
@@ -133,27 +149,27 @@ function NavBar() {
                   value={q}
                   onChange={e=>setQ(e.target.value)}
                   onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
-                  placeholder="Rechercher sur EPI-Flipboard"
-                  className="search-input"
+                  placeholder={t('nav.search_placeholder')}
+                  className="search-input bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/50 border-gray-200 dark:border-white/10 focus:ring-brand-red"
                 />
               </div>
-              <button className="btn btn-primary" onClick={() => navigate('/create')}>Créer un article</button>
-              <button className="nav-link" title="Abonnements" onClick={() => navigate('/follows')}>Abonnements</button>
+              <button className="btn btn-primary" onClick={() => navigate('/create')}>{t('nav.create_article')}</button>
+              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white" title={t('nav.following')} onClick={() => navigate('/follows')}>{t('nav.following')}</button>
               <div className="relative">
-                <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-white/40">
+                <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-white/40">
                   <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
                 </button>
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white border rounded shadow p-2">
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded shadow p-2">
                     <div className="flex flex-col">
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>Compte</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>Statistiques</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>Paramètres</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded flex items-center justify-between">
-                        <span>Mode sombre</span>
-                        <span className="text-red-500">✓</span>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>{t('nav.account')}</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>{t('nav.statistics')}</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>{t('nav.settings')}</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-between" onClick={toggleTheme}>
+                        <span>{t('nav.dark_mode')}</span>
+                        {theme === 'dark' && <span className="text-brand-red">✓</span>}
                       </button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>Déconnexion</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>{t('nav.logout')}</button>
                     </div>
                   </div>
                 )}
@@ -161,18 +177,18 @@ function NavBar() {
             </>
           ) : (
             <>
-              <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active' : 'nav-link'}>Newsletter</NavLink>
+              <NavLink to="/newsletter" className={({isActive}) => isActive ? 'nav-link-active text-gray-900 dark:text-white' : 'nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white'}>{t('nav.newsletter')}</NavLink>
               <div className="hidden md:flex items-center">
                 <input
                   value={q}
                   onChange={e=>setQ(e.target.value)}
                   onKeyDown={e=>{ if(e.key==='Enter') goSearch() }}
-                  placeholder="Rechercher sur EPI-Flipboard"
-                  className="search-input"
+                  placeholder={t('nav.search_placeholder')}
+                  className="search-input bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/50 border-gray-200 dark:border-white/10 focus:ring-brand-red"
                 />
               </div>
-              <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>S'inscrire</button>
-              <button className="nav-link" onClick={() => navigate('/login')}>Connexion</button>
+              <button className="nav-link btn btn-primary" onClick={() => navigate('/signup')}>{t('nav.signup')}</button>
+              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white" onClick={() => navigate('/login')}>{t('nav.login')}</button>
             </>
           )}
         </nav>
@@ -180,24 +196,24 @@ function NavBar() {
     
     {authOpen && (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div className="bg-brand-dark text-white rounded-xl shadow-magazine w-full max-w-3xl overflow-hidden">
+        <div className="bg-white dark:bg-brand-dark text-gray-900 dark:text-white rounded-xl shadow-magazine w-full max-w-3xl overflow-hidden transition-colors duration-200">
           <div className="flex">
-            <div className="hidden md:block  bg-black/40 p-6">
+            <div className="hidden md:block bg-gray-100 dark:bg-black/40 p-6">
               <div className="flex items-center mb-4 px-4">
                 <img src="/logo.png" alt="Logo" className="h-40 w-40 rounded" />
               </div>
                 <div className="text-lg font-bold">EPI-FLIPBOARD</div>
-              <div className="space-y-3 text-sm text-white/80">
-                <div>Restez informé. Toujours inspiré.</div>
-                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />Suivre des sujets</div>
-                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />Sélectionnez des histoires</div>
-                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />Partagez des idées</div>
+              <div className="space-y-3 text-sm text-gray-600 dark:text-white/80">
+                <div>{t('nav.brand_slogan')}</div>
+                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />{t('nav.follow_topics')}</div>
+                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />{t('nav.curate_stories')}</div>
+                <div className="flex items-center gap-2"><span className="h-2 w-2 rounded-full bg-brand-blue" />{t('nav.share_ideas')}</div>
               </div>
             </div>
-            <div className="flex-1 p-6">
+            <div className="flex-1 p-8">
               <div className="flex justify-between items-start">
-                <h2 className="text-xl font-semibold">{mode === 'login' ? 'Se connecter à EPI-FLIPBOARD' : 'Rejoignez EPI-FLIPBOARD'}</h2>
-                <button onClick={() => { setAuthOpen(false); if (location.pathname === '/login' || location.pathname === '/signup') navigate('/', { replace: true }) }} className="text-white/70 hover:text-white">✕</button>
+                <h2 className="text-xl font-semibold">{mode === 'login' ? t('auth.login_title') : t('auth.register_title')}</h2>
+                <button onClick={() => { setAuthOpen(false); if (location.pathname === '/login' || location.pathname === '/signup') navigate('/', { replace: true }) }} className="text-gray-500 hover:text-gray-900 dark:text-white/70 dark:hover:text-white">✕</button>
               </div>
 
               {mode === 'login' ? (
@@ -214,23 +230,23 @@ function NavBar() {
                       onClick={() => (window.location.href = `${API_URL}/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Facebook</button>
                   </div>
-                  <input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder="Email" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
-                  <input type="password" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder="Mot de passe" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
-                  <button disabled={loginLoading} type="submit" className="w-full btn btn-primary">{loginLoading ? 'Connexion…' : 'Se connecter'}</button>
+                  <input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder={t('auth.email_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
+                  <input type="password" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder={t('auth.password_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
+                  <button disabled={loginLoading} type="submit" className="w-full btn btn-primary">{loginLoading ? t('auth.logging_in') : t('auth.login_button')}</button>
                   {loginError && <p className="text-red-400 text-sm">{loginError}</p>}
-                  <div className="text-sm text-white/70 mt-2">Nouveau sur EPI-FLIPBOARD ? <button type="button" className="underline" onClick={() => setMode('register')}>Créer un compte</button></div>
+                  <div className="text-sm text-gray-600 dark:text-white/70 mt-2">{t('auth.no_account')} <button type="button" className="underline" onClick={() => setMode('register')}>{t('auth.signup_link')}</button></div>
                 </form>
               ) : (
                 <form className="mt-4 space-y-3" onSubmit={onRegister}>
-                  <input type="email" value={regEmail} onChange={e=>setRegEmail(e.target.value)} placeholder="Email" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
-                  <input type="text" value={regName} onChange={e=>setRegName(e.target.value)} placeholder="Nom complet" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
-                  <input type="password" value={regPassword} onChange={e=>setRegPassword(e.target.value)} placeholder="Mot de passe" className="w-full bg-black/40 text-white placeholder-white/60 border border-white/10 rounded px-3 py-2" />
-                  <button disabled={regLoading} type="submit" className="w-full btn btn-primary">{regLoading ? 'Création…' : 'Continuer'}</button>
+                  <input type="email" value={regEmail} onChange={e=>setRegEmail(e.target.value)} placeholder={t('auth.email_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
+                  <input type="text" value={regName} onChange={e=>setRegName(e.target.value)} placeholder={t('auth.name_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
+                  <input type="password" value={regPassword} onChange={e=>setRegPassword(e.target.value)} placeholder={t('auth.password_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
+                  <button disabled={regLoading} type="submit" className="w-full btn btn-primary">{regLoading ? t('auth.creating') : t('auth.continue')}</button>
                   {regError && <p className="text-red-400 text-sm">{regError}</p>}
-                  <div className="text-sm text-white/70 mt-2">Vous avez déjà un compte ? <button type="button" className="underline" onClick={() => setMode('login')}>Se connecter</button></div>
+                  <div className="text-sm text-gray-600 dark:text-white/70 mt-2">{t('auth.has_account')} <button type="button" className="underline" onClick={() => setMode('login')}>{t('auth.login_link')}</button></div>
                 </form>
               )}
-              <p className="text-xs text-white/50 mt-6">En continuant, vous acceptez les Conditions d'utilisation et Politique de confidentialité.</p>
+              <p className="text-xs text-gray-500 dark:text-white/50 mt-6">{t('auth.terms_privacy')}</p>
             </div>
           </div>
         </div>

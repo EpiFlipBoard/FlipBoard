@@ -1,3 +1,5 @@
+import i18n from '../i18n'
+
 const TOKEN_KEY = 'epi_token'
 const USER_KEY = 'epi_user'
 
@@ -44,7 +46,7 @@ export async function authFetch(url, options = {}) {
   // Si 401 (non autorisé), c'est probablement que le token a expiré
   if (response.status === 401) {
     clearAuth()
-    alert('Votre session a expiré. Veuillez vous reconnecter.')
+    alert(i18n.t('auth.session_expired'))
     window.location.href = '/'
     throw new Error('Session expired')
   }

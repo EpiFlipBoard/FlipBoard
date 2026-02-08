@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function CollectionDetail() {
+  const { t } = useTranslation()
   const { id } = useParams()
   const [collection, setCollection] = useState(null)
   const [query, setQuery] = useState('')
@@ -37,31 +39,31 @@ function CollectionDetail() {
     if (res.ok) {
       load() // Reload collection to show new post
       setResults(prev => prev.filter(p => p._id !== postId)) // Remove from results or just keep? User said "click on article to add it", implies it moves or status changes. Reloading is safe.
-      alert('Article ajouté à la collection')
+      alert(t('collection_detail.added_success'))
     }
   }
 
-  if (!collection) return <div className="p-10 text-center text-white">Chargement...</div>
+  if (!collection) return <div className="p-10 text-center text-gray-900 dark:text-white">{t('collection_detail.loading')}</div>
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-black text-black dark:text-white pb-20">
-      <div className="bg-brand-dark py-12 px-6 text-center">
-        <h1 className="text-4xl font-bold text-white mb-4">{collection.name}</h1>
-        {collection.description && <p className="text-white/80 max-w-2xl mx-auto">{collection.description}</p>}
+    <div className="min-h-screen bg-white dark:bg-brand-dark text-gray-900 dark:text-white pb-20">
+      <div className="bg-gray-100 dark:bg-black/40 py-12 px-6 text-center border-b border-gray-200 dark:border-white/5">
+        <h1 className="text-4xl font-bold mb-4">{collection.name}</h1>
+        {collection.description && <p className="text-gray-600 dark:text-white/80 max-w-2xl mx-auto">{collection.description}</p>}
       </div>
 
       <div className="max-w-6xl mx-auto px-4 mt-8">
         <div className="mb-10">
-          <h2 className="text-2xl font-bold mb-4">Ajouter des articles</h2>
+          <h2 className="text-2xl font-bold mb-4">{t('collection_detail.add_articles')}</h2>
           <form onSubmit={handleSearch} className="flex gap-2 mb-4">
             <input 
               type="text" 
               value={query}
               onChange={e => setQuery(e.target.value)}
-              placeholder="Rechercher un article..." 
+              placeholder={t('collection_detail.search_placeholder')} 
               className="flex-1 p-3 rounded bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-brand-red"
             />
-            <button type="submit" className="btn btn-primary px-6">Rechercher</button>
+            <button type="submit" className="btn btn-primary px-6">{t('collection_detail.search_button')}</button>
           </form>
 
           {results.length > 0 && (
@@ -72,7 +74,7 @@ function CollectionDetail() {
                   <div className="flex-1 overflow-hidden">
                     <h3 className="font-bold truncate">{post.title}</h3>
                     <p className="text-sm text-gray-500 dark:text-gray-400 truncate">{post.author}</p>
-                    <button className="mt-2 text-xs text-brand-red font-semibold uppercase tracking-wide">Ajouter +</button>
+                    <button className="mt-2 text-xs text-brand-red font-semibold uppercase tracking-wide">{t('collection_detail.add_button')}</button>
                   </div>
                 </div>
               ))}
@@ -80,7 +82,7 @@ function CollectionDetail() {
           )}
         </div>
 
-        <h2 className="text-2xl font-bold mb-6">Articles dans cette collection</h2>
+        <h2 className="text-2xl font-bold mb-6">{t('collection_detail.articles_in_collection')}</h2>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {collection.posts && collection.posts.map(post => (
              <article key={post._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden flex flex-col hover:shadow-xl transition-shadow">
@@ -104,7 +106,7 @@ function CollectionDetail() {
           ))}
           {!collection.posts?.length && (
             <div className="col-span-full text-center py-10 text-gray-500">
-              Cette collection est vide. Recherchez des articles ci-dessus pour les ajouter.
+              {t('collection_detail.empty_collection')}
             </div>
           )}
         </div>

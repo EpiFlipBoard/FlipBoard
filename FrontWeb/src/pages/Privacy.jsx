@@ -1,23 +1,26 @@
+import { useTranslation } from 'react-i18next'
+
 function Privacy() {
+  const { t } = useTranslation()
   return (
-    <div className="max-w-3xl mx-auto py-16 px-4 text-white">
-      <h1 className="text-4xl font-bold mb-8">Politique de confidentialité</h1>
-      <div className="prose prose-invert prose-lg">
-        <p className="text-white/80">Dernière mise à jour : 12 Janvier 2026</p>
+    <div className="max-w-3xl mx-auto py-16 px-4 text-gray-900 dark:text-white">
+      <h1 className="text-4xl font-bold mb-8">{t('privacy.title')}</h1>
+      <div className="prose dark:prose-invert prose-lg">
+        <p className="text-gray-600 dark:text-white/80">{t('privacy.last_updated')}</p>
         
-        <h3>1. Introduction</h3>
+        <h3>{t('privacy.intro_title')}</h3>
         <p>
-          Chez EPI-FLIPBOARD, nous prenons votre vie privée très au sérieux. Cette politique décrit comment nous collectons, utilisons et protégeons vos informations personnelles.
+          {t('privacy.intro_body')}
         </p>
 
-        <h3>2. Collecte des données</h3>
+        <h3>{t('privacy.collection_title')}</h3>
         <p>
-          Nous collectons les informations que vous nous fournissez directement (nom, email) ainsi que des données d'utilisation pour améliorer votre expérience.
+          {t('privacy.collection_body')}
         </p>
 
-        <h3>3. Utilisation des données</h3>
+        <h3>{t('privacy.usage_title')}</h3>
         <p>
-          Vos données sont utilisées pour personnaliser votre flux, vous envoyer des mises à jour pertinentes et assurer la sécurité de votre compte.
+          {t('privacy.usage_body')}
         </p>
       </div>
     </div>

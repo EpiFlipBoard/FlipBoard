@@ -27,6 +27,24 @@ router.get('/search', async (req, res) => {
   res.json({ posts })
 })
 
+router.get('/random', async (req, res) => {
+  try {
+    const posts = await Post.aggregate([
+      { $match: { url: { $exists: true, $ne: '' } } },
+      { $sample: { size: 1 } }
+    ])
+    
+    if (!posts || posts.length === 0) {
+      return res.status(404).json({ error: 'No external articles found' })
+    }
+    
+    res.json(posts[0])
+  } catch (error) {
+    console.error('Error fetching random post:', error)
+    res.status(500).json({ error: 'Internal server error' })
+  }
+})
+
 function hostname(url) {
   try { return new URL(url).hostname.replace(/^www\./, '') } catch { return '' }
 }

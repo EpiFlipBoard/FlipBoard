@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { fr } from 'date-fns/locale'
+import { fr, enUS } from 'date-fns/locale'
+import { useTranslation } from 'react-i18next'
 import { getToken, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 export default function Comments({ postId, onClose, isPopup = false }) {
+  const { t, i18n } = useTranslation()
   const [comments, setComments] = useState([])
   const [page, setPage] = useState(1)
   const [total, setTotal] = useState(0)
@@ -39,7 +41,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
     if (!newComment.trim()) return
     
     const token = getToken()
-    if (!token) return alert('Veuillez vous connecter pour commenter.')
+    if (!token) return alert(t('comments.login_required'))
 
     setSubmitting(true)
     try {
@@ -67,7 +69,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
     <div className={`flex flex-col ${isPopup ? 'h-full p-6' : 'mt-8'}`}>
       <div className="flex items-center justify-between mb-6 flex-shrink-0">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white">
-          Commentaires ({total})
+          {t('comments.title')} ({total})
         </h3>
         {isPopup && (
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
@@ -83,8 +85,8 @@ export default function Comments({ postId, onClose, isPopup = false }) {
         <textarea
           value={newComment}
           onChange={e => setNewComment(e.target.value)}
-          placeholder="Ajouter un commentaire..."
-          className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-red focus:border-transparent dark:bg-white/10 dark:border-white/20 dark:text-white resize-none"
+          placeholder={t('comments.placeholder')}
+          className="w-full p-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-brand-red focus:border-transparent bg-white dark:bg-white/10 dark:border-white/20 text-gray-900 dark:text-white resize-none"
           rows="3"
         />
         <div className="flex justify-end mt-2">
@@ -93,7 +95,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
             disabled={submitting || !newComment.trim()}
             className="btn btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {submitting ? 'Envoi...' : 'Commenter'}
+            {submitting ? t('comments.submitting') : t('comments.submit')}
           </button>
         </div>
       </form>
@@ -101,7 +103,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
       {/* Comments List */}
       <div className="flex-1 overflow-y-auto space-y-6 min-h-[200px] pr-2">
         {loading ? (
-          <div className="text-center text-gray-500 py-8">Chargement...</div>
+          <div className="text-center text-gray-500 py-8">{t('comments.loading')}</div>
         ) : comments.length > 0 ? (
           comments.map(c => (
             <div key={c.id} className="flex gap-4">
@@ -119,10 +121,10 @@ export default function Comments({ postId, onClose, isPopup = false }) {
               <div className="flex-1">
                 <div className="flex items-baseline justify-between mb-1">
                   <span className="font-bold text-gray-900 dark:text-white">
-                    {c.user?.name || 'Utilisateur inconnu'}
+                    {c.user?.name || t('comments.unknown_user')}
                   </span>
                   <span className="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: fr })}
+                    {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: i18n.language.startsWith('fr') ? fr : enUS })}
                   </span>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">{c.text}</p>
@@ -130,7 +132,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
             </div>
           ))
         ) : (
-          <div className="text-center text-gray-500 py-8">Aucun commentaire pour le moment.</div>
+          <div className="text-center text-gray-500 py-8">{t('comments.no_comments')}</div>
         )}
       </div>
 
@@ -145,11 +147,11 @@ export default function Comments({ postId, onClose, isPopup = false }) {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M15 18l-6-6 6-6" />
             </svg>
-            Précédent
+            {t('comments.previous')}
           </button>
           
           <span className="text-sm font-medium text-gray-600 dark:text-gray-400">
-            Page {page} sur {Math.ceil(total / 5)}
+            {t('comments.page_info', { page, total: Math.ceil(total / 5) })}
           </span>
           
           <button 
@@ -157,7 +159,7 @@ export default function Comments({ postId, onClose, isPopup = false }) {
             disabled={!hasMore}
             className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/20 text-gray-900 dark:text-white disabled:opacity-50 disabled:cursor-not-allowed transition"
           >
-            Suivant
+            {t('comments.next')}
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M9 18l6-6-6-6" />
             </svg>

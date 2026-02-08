@@ -1,9 +1,11 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function CreateArticle() {
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -23,52 +25,52 @@ function CreateArticle() {
       const data = await res.json()
       navigate(`/article/${data.post._id}`)
     } else {
-      alert('Failed to create article')
+      alert(t('create_article.error_create'))
     }
   }
 
   return (
     <div className="max-w-2xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-8">Créer un article</h1>
+      <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">{t('create_article.title')}</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-semibold mb-2 text-white">Titre</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">{t('create_article.form_title')}</label>
           <input 
             value={title} 
             onChange={e => setTitle(e.target.value)} 
-            className="w-full border p-3 rounded focus:ring-2 focus:ring-brand-red outline-none" 
+            className="w-full border border-gray-300 dark:border-gray-700 p-3 rounded focus:ring-2 focus:ring-brand-red outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" 
             required 
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-2 text-white">Description courte</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">{t('create_article.form_description')}</label>
           <input 
             value={description} 
             onChange={e => setDescription(e.target.value)} 
-            className="w-full border p-3 rounded focus:ring-2 focus:ring-brand-red outline-none" 
+            className="w-full border border-gray-300 dark:border-gray-700 p-3 rounded focus:ring-2 focus:ring-brand-red outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" 
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-2 text-white">URL de l'image de couverture</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">{t('create_article.form_image_url')}</label>
           <input 
             value={imageUrl} 
             onChange={e => setImageUrl(e.target.value)} 
-            className="w-full border p-3 rounded focus:ring-2 focus:ring-brand-red outline-none" 
+            className="w-full border border-gray-300 dark:border-gray-700 p-3 rounded focus:ring-2 focus:ring-brand-red outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" 
           />
         </div>
         <div>
-          <label className="block text-sm font-semibold mb-2 text-white">Contenu</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">{t('create_article.form_content')}</label>
           <textarea 
             value={content} 
             onChange={e => setContent(e.target.value)} 
             rows={10} 
-            className="w-full border p-3 rounded focus:ring-2 focus:ring-brand-red outline-none" 
+            className="w-full border border-gray-300 dark:border-gray-700 p-3 rounded focus:ring-2 focus:ring-brand-red outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white" 
             required 
           />
         </div>
         <div className="flex gap-4">
-          <button type="submit" className="btn btn-primary px-8 py-3 text-lg">Publier</button>
-          <button type="button" onClick={() => navigate('/')} className="btn btn-muted px-8 py-3 text-lg">Annuler</button>
+          <button type="submit" className="btn btn-primary px-8 py-3 text-lg">{t('create_article.publish')}</button>
+          <button type="button" onClick={() => navigate('/')} className="btn btn-muted px-8 py-3 text-lg">{t('create_article.cancel')}</button>
         </div>
       </form>
     </div>
