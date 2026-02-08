@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { authFetch } from '../lib/auth.js'
+import { authFetch, getToken } from '../lib/auth.js'
 
 function Follows() {
   const tabs = ['Following', 'Likes', 'Comments']
