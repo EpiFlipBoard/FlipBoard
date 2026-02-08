@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const User = require('../../src/models/User');
+import mongoose from 'mongoose';
+import User from '../../src/models/User.js';
 
 describe('User Model', () => {
   it('crée un utilisateur simple', () => {

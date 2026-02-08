@@ -126,16 +126,18 @@ async function connectDB() {
       })
       
       // Import data based on environment
-      if (process.env.NODE_ENV !== 'production') {
-        // En développement: tout importer
-        console.log('🔄 Running initial data import (dev mode)')
-        await importAutonewsBatch()
-        await importJeuneAfriqueBatch()
-        await autoPopulateArticles()
-      } else {
-        // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
-        console.log('🔄 Running initial auto-populate (production mode)')
-        await autoPopulateArticles()
+      if (process.env.NODE_ENV !== 'test') {
+        if (process.env.NODE_ENV !== 'production') {
+          // En développement: tout importer
+          console.log('🔄 Running initial data import (dev mode)')
+          await importAutonewsBatch()
+          await importJeuneAfriqueBatch()
+          await autoPopulateArticles()
+        } else {
+          // En production: seulement auto-populate (pas de Puppeteer sur Vercel)
+          console.log('🔄 Running initial auto-populate (production mode)')
+          await autoPopulateArticles()
+        }
       }
       
       return true
@@ -183,6 +185,10 @@ app.use(async (req, res, next) => {
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'FlipBoard API is running' })
+})
+
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
 app.use('/api/auth', authRouter)
@@ -441,7 +447,7 @@ async function autoPopulateArticles() {
 }
 
 // For local development
-if (process.env.NODE_ENV !== 'production') {
+if (process.env.NODE_ENV !== 'production' && process.env.NODE_ENV !== 'test') {
   connectDB().then(() => {
     app.listen(port, () => {
       console.log(`API on http://localhost:${port}`)
