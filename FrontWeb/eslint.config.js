@@ -12,6 +12,7 @@ export default [
       ecmaVersion: 2020,
       globals: {
         ...globals.browser,
+        global: 'writable',
         vi: 'readonly',
         describe: 'readonly',
         it: 'readonly',
