@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { authFetch, clearAuth, getUser } from '../lib/auth.js'
+import { authFetch, clearAuth, getUser, setAuth, getToken } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 function Settings() {
@@ -11,7 +11,6 @@ function Settings() {
   const [tab, setTab] = useState('profile')
   const tabs = useMemo(() => ['profile', 'newsletters'], [])
   const [name, setName] = useState(user?.name || '')
-  const [username, setUsername] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
   const [bio, setBio] = useState(user?.bio || '')
   const [isPrivate, setIsPrivate] = useState(user?.isPrivate || false)
@@ -40,7 +39,6 @@ function Settings() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
-          username,
           email,
           bio,
           isPrivate,
@@ -48,6 +46,11 @@ function Settings() {
         })
       })
       if (!res.ok) throw new Error('Failed to save')
+      // Update localStorage with new user data
+      const data = await res.json()
+      if (data.user) {
+        setAuth(getToken(), data.user)
+      }
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 2000)
     } catch (err) {
@@ -100,10 +103,6 @@ function Settings() {
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-white/80">{t('settings.profile.name')}</label>
               <input value={name} onChange={e=>setName(e.target.value)} className="w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-black/60 px-4 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-red focus:outline-none transition" />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-white/80">{t('settings.profile.username')}</label>
-              <input value={username} onChange={e=>setUsername(e.target.value)} className="w-full rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-black/60 px-4 py-2 text-gray-900 dark:text-white focus:ring-2 focus:ring-brand-red focus:outline-none transition" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1 text-gray-700 dark:text-white/80">{t('settings.profile.email')}</label>

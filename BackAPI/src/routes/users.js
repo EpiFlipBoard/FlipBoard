@@ -61,11 +61,10 @@ router.patch('/:id', auth, async (req, res) => {
     if (String(req.user._id) !== String(req.params.id)) {
       return res.status(403).json({ error: 'Unauthorized' })
     }
-    const { name, username, email, bio, isPrivate, avatar } = req.body || {}
+    const { name, email, bio, isPrivate, avatar } = req.body || {}
     const user = await User.findById(req.user._id)
     if (!user) return res.status(404).json({ error: 'User not found' })
     if (typeof name === 'string') user.name = name
-    if (typeof username === 'string') user.username = username
     if (typeof email === 'string') user.email = email
     if (typeof bio === 'string') user.bio = bio
     if (typeof isPrivate === 'boolean') user.isPrivate = isPrivate
@@ -74,7 +73,6 @@ router.patch('/:id', auth, async (req, res) => {
     res.json({ ok: true, user: {
       id: user._id,
       name: user.name,
-      username: user.username,
       email: user.email,
       bio: user.bio,
       isPrivate: user.isPrivate,
