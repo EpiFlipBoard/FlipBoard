@@ -173,6 +173,16 @@
       "header": "NEWSLETTER SUBSCRIPTIONS",
       "subscribe_all": "Subscribe to all",
       "unsubscribe_all": "Unsubscribe from all"
+    },
+    "delete": {
+      "header": "DANGER ZONE",
+      "description": "Deleting your account removes your profile, collections, comments, and posts. This cannot be undone.",
+      "button": "Delete account",
+      "deleting": "Deleting...",
+      "confirm": "Are you sure you want to delete your account? This action is permanent.",
+      "confirm_google": "You're signed in with Google. Delete your account anyway? This action is permanent.",
+      "failed": "Failed to delete account.",
+      "google_connected": "This account is connected with Google."
     }
   },
   "edit_collection": {
