@@ -26,6 +26,34 @@ function NavBar() {
   const { theme, toggleTheme } = useTheme()
   const user = getUser()
 
+  // Notification Polling
+  useEffect(() => {
+    if (!user) return
+
+    let lastCheck = new Date().toISOString()
+    const interval = setInterval(async () => {
+      try {
+        const res = await authFetch(`${API_URL}/api/users/me/notifications/check?since=${lastCheck}`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data.newPosts > 0) {
+            // Play sound
+            const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3')
+            audio.volume = 0.5
+            audio.play().catch(e => console.error('Audio play failed', e))
+            
+            // Reset timer to avoid spamming for the same posts
+            lastCheck = new Date().toISOString()
+          }
+        }
+      } catch (e) {
+        console.error('Notification check failed', e)
+      }
+    }, 60000) // Check every minute
+
+    return () => clearInterval(interval)
+  }, [user?.email]) // Re-run if user changes
+
   const toggleLanguage = () => {
     const newLang = i18n.language.startsWith('fr') ? 'en' : 'fr'
     i18n.changeLanguage(newLang)
