@@ -235,14 +235,9 @@ function NavBar() {
                   <div className="flex gap-2 mb-2">
                     <button
                       type="button"
-                      className="btn btn-muted"
+                      className="btn btn-muted w-full"
                       onClick={() => (window.location.href = `${API_URL}/api/auth/oauth/google?origin=${encodeURIComponent(window.location.origin)}`)}
                     >Google</button>
-                    <button
-                      type="button"
-                      className="btn btn-muted"
-                      onClick={() => (window.location.href = `${API_URL}/api/auth/oauth/facebook?origin=${encodeURIComponent(window.location.origin)}`)}
-                    >Facebook</button>
                   </div>
                   <input type="email" value={loginEmail} onChange={e=>setLoginEmail(e.target.value)} placeholder={t('auth.email_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
                   <input type="password" value={loginPassword} onChange={e=>setLoginPassword(e.target.value)} placeholder={t('auth.password_label')} className="w-full bg-gray-100 dark:bg-black/40 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-white/60 border border-gray-200 dark:border-white/10 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-red" />
