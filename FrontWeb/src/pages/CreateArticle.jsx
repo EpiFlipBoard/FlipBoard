@@ -15,7 +15,7 @@ function CreateArticle() {
   async function handleSubmit(e) {
     e.preventDefault()
 
-    const res = await fetch(`${API_URL}/api/posts/create`, {
+    const res = await authFetch(`${API_URL}/api/posts/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ title, description, content, imageUrl }),
