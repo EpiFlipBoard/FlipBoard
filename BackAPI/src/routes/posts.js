@@ -113,25 +113,6 @@ router.get('/', async (req, res) => {
 
   const query = {}
 
-  if (req.headers.authorization) {
-    try {
-      const token = req.headers.authorization.replace('Bearer ', '')
-      const decoded = jwt.verify(token, process.env.JWT_SECRET)
-      const user = await User.findById(decoded.uid)
-      if (user) {
-         const myBlockedAndMuted = [...(user.blockedUsers || []), ...(user.mutedUsers || [])]
-         const usersBlockingMe = await User.find({ blockedUsers: user._id }).distinct('_id')
-         const excludedIds = [...myBlockedAndMuted, ...usersBlockingMe]
-         
-         if (excludedIds.length > 0) {
-            query.authorId = { $nin: excludedIds }
-         }
-      }
-    } catch {
-      // Ignore token errors
-    }
-  }
-
   const posts = await Post.find(query)
     .sort({ createdAt: -1 })
     .skip(skip)
@@ -292,32 +273,7 @@ router.get('/:id', async (req, res) => {
     const post = await Post.findById(req.params.id)
     if (!post) return res.status(404).json({ error: 'not found' })
 
-    // Check blocks/mutes
-    if (req.headers.authorization) {
-      try {
-        const token = req.headers.authorization.replace('Bearer ', '')
-        const decoded = jwt.verify(token, process.env.JWT_SECRET)
-        const user = await User.findById(decoded.uid)
-        
-        if (user && post.authorId) {
-            // If I blocked author or muted author
-            if ((user.blockedUsers || []).includes(post.authorId) || 
-                (user.mutedUsers || []).includes(post.authorId)) {
-                  return res.status(404).json({ error: 'not found' })
-            }
-            
-            // If author blocked me
-            const author = await User.findById(post.authorId)
-            if (author && (author.blockedUsers || []).includes(user._id)) {
-                 return res.status(404).json({ error: 'not found' })
-             }
-         }
-       } catch {
-         // Ignore token errors
-       }
-     }
- 
-     res.json({ post })
+    res.json({ post })
   } catch {
     res.status(404).json({ error: 'not found' })
   }
@@ -352,26 +308,9 @@ router.get('/:id/comments', async (req, res) => {
   const limit = parseInt(req.query.limit) || 5
   const skip = (page - 1) * limit
 
-  let excludedUserIds = []
-   if (req.headers.authorization) {
-     try {
-         const token = req.headers.authorization.replace('Bearer ', '')
-         const decoded = jwt.verify(token, process.env.JWT_SECRET)
-         const user = await User.findById(decoded.uid)
-         if (user) {
-             excludedUserIds = [...(user.mutedUsers || []), ...(user.blockedUsers || [])]
-         }
-     } catch {
-       // Ignore token errors
-     }
-   }
- 
    try {
      const query = { postId: id }
-     if (excludedUserIds.length > 0) {
-         query.userId = { $nin: excludedUserIds }
-     }
- 
+
      const total = await Comment.countDocuments(query)
     const comments = await Comment.find(query)
       .sort({ createdAt: -1 })

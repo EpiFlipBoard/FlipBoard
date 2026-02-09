@@ -6,7 +6,7 @@ function Settings() {
   const { t } = useTranslation()
   const user = getUser()
   const [tab, setTab] = useState('profile')
-  const tabs = useMemo(() => ['profile', 'newsletters', 'content'], [])
+  const tabs = useMemo(() => ['profile', 'newsletters'], [])
   const [name, setName] = useState(user?.name || '')
   const [username, setUsername] = useState(user?.name || '')
   const [email, setEmail] = useState(user?.email || '')
@@ -66,21 +66,6 @@ function Settings() {
           <div className="flex flex-col gap-3 mt-2">
             <label className="inline-flex items-center gap-2"><input type="radio" name="newsletter" /> <span>{t('settings.newsletters.subscribe_all')}</span></label>
             <label className="inline-flex items-center gap-2"><input type="radio" name="newsletter" /> <span>{t('settings.newsletters.unsubscribe_all')}</span></label>
-          </div>
-        </div>
-      )}
-      {tab === 'content' && (
-        <div className="space-y-6">
-          <h2 className="text-xl font-extrabold">{t('settings.content.header')}</h2>
-          <div className="grid sm:grid-cols-2 gap-6">
-            <div>
-              <div className="font-semibold">{t('settings.content.muted_sources')}</div>
-              <div className="text-gray-600 dark:text-white/80 mt-1">{t('settings.content.no_muted')}</div>
-            </div>
-            <div>
-              <div className="font-semibold">{t('settings.content.blocked_profiles')}</div>
-              <div className="text-gray-600 dark:text-white/80 mt-1">{t('settings.content.no_blocked')}</div>
-            </div>
           </div>
         </div>
       )}

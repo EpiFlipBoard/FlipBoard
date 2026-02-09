@@ -105,9 +105,7 @@
     "next": "Next",
     "page_info": "Page {{page}} of {{total}}",
     "delete": "Delete",
-    "confirm_delete": "Are you sure you want to delete this comment?",
-    "mute_user": "Mute User",
-    "confirm_mute": "Are you sure you want to mute this user? You won't see their comments anymore."
+    "confirm_delete": "Are you sure you want to delete this comment?"
   },
   "article": {
     "loading": "Loading...",
@@ -157,8 +155,7 @@
   "settings": {
     "tabs": {
       "profile": "Profile Settings",
-      "newsletters": "Newsletter Subscriptions",
-      "content": "Content Options"
+      "newsletters": "Newsletter Subscriptions"
     },
     "profile": {
       "header": "ACCOUNT SETTINGS",
@@ -174,13 +171,6 @@
       "header": "NEWSLETTER SUBSCRIPTIONS",
       "subscribe_all": "Subscribe to all",
       "unsubscribe_all": "Unsubscribe from all"
-    },
-    "content": {
-      "header": "CONTENT OPTIONS",
-      "muted_sources": "Muted sources and domains",
-      "no_muted": "You haven't muted any sources",
-      "blocked_profiles": "Blocked profiles",
-      "no_blocked": "You haven't blocked anyone"
     }
   },
   "edit_collection": {
@@ -201,14 +191,7 @@
     "following": "Following",
     "follow": "Follow",
     "published_articles": "Published Articles",
-    "no_articles": "No articles published yet.",
-    "block": "Block",
-    "unblock": "Unblock",
-    "mute": "Mute",
-    "unmute": "Unmute",
-    "confirm_block": "Are you sure you want to block this user? You won't see their articles anymore.",
-    "login_to_block": "Please log in to block users",
-    "login_to_mute": "Please log in to mute users"
+    "no_articles": "No articles published yet."
   },
   "favorites": {
     "title": "Favorites",

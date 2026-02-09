@@ -6,26 +6,6 @@ import auth from '../middleware/auth.js'
 
 const router = express.Router()
 
-// Get blocked users
-router.get('/blocked', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).populate('blockedUsers', 'name avatar email')
-    res.json(user.blockedUsers)
-  } catch {
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-// Get muted users
-router.get('/muted', auth, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).populate('mutedUsers', 'name avatar email')
-    res.json(user.mutedUsers)
-  } catch {
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
 // Get user profile
 router.get('/:id', async (req, res) => {
   try {
@@ -169,78 +149,6 @@ router.get('/me/activity', auth, async (req, res) => {
     })
   } catch (e) {
     console.error(e)
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-// Block user
-router.post('/:id/block', auth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const targetUser = await User.findById(id)
-    if (!targetUser) return res.status(404).json({ error: 'User not found' })
-    
-    if (targetUser._id.equals(req.user._id)) {
-      return res.status(400).json({ error: 'Cannot block yourself' })
-    }
-
-    await User.findByIdAndUpdate(req.user._id, {
-      $addToSet: { blockedUsers: targetUser._id },
-      $pull: { following: targetUser._id, followers: targetUser._id }
-    })
-    
-    await User.findByIdAndUpdate(targetUser._id, {
-      $pull: { followers: req.user._id, following: req.user._id }
-    })
-
-    res.json({ success: true })
-  } catch {
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-// Unblock user
-router.post('/:id/unblock', auth, async (req, res) => {
-  try {
-    const { id } = req.params
-    await User.findByIdAndUpdate(req.user._id, {
-      $pull: { blockedUsers: id }
-    })
-    res.json({ success: true })
-  } catch {
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-// Mute user
-router.post('/:id/mute', auth, async (req, res) => {
-  try {
-    const { id } = req.params
-    const targetUser = await User.findById(id)
-    if (!targetUser) return res.status(404).json({ error: 'User not found' })
-    
-    if (targetUser._id.equals(req.user._id)) {
-      return res.status(400).json({ error: 'Cannot mute yourself' })
-    }
-
-    await User.findByIdAndUpdate(req.user._id, {
-      $addToSet: { mutedUsers: targetUser._id }
-    })
-    res.json({ success: true })
-  } catch {
-    res.status(500).json({ error: 'Server error' })
-  }
-})
-
-// Unmute user
-router.post('/:id/unmute', auth, async (req, res) => {
-  try {
-    const { id } = req.params
-    await User.findByIdAndUpdate(req.user._id, {
-      $pull: { mutedUsers: id }
-    })
-    res.json({ success: true })
-  } catch {
     res.status(500).json({ error: 'Server error' })
   }
 })
