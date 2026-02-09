@@ -22,7 +22,6 @@ function NavBar() {
   const [regPassword, setRegPassword] = useState('')
   const [regLoading, setRegLoading] = useState(false)
   const [regError, setRegError] = useState('')
-  const [menuOpen, setMenuOpen] = useState(false)
   const { theme, toggleTheme } = useTheme()
   const user = getUser()
 
@@ -115,19 +114,9 @@ function NavBar() {
             <Link to="/" className="flex items-center gap-2">
               <img src="/logo.png" alt="Logo" className="h-16 w-16" />
             </Link>
-            <Link to="/" className="flex items-center gap-2">
-              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white">{t('nav.for_you')}</button>
+            <Link to="/" className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white">
+              {t('nav.home')}
             </Link>
-            <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white">{t('nav.todays_edition')}</button>
-            <div className="relative">
-              <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white" onClick={() => setMenuOpen(!menuOpen)}>▼</button>
-              {menuOpen && (
-                <div className="absolute mt-2 w-40 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded shadow p-2 border border-gray-200 dark:border-gray-700">
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => setMenuOpen(false)}>{t('nav.edit')}</button>
-                  <button className="w-full text-left px-2 py-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => setMenuOpen(false)}>{t('nav.explore_more')}</button>
-                </div>
-              )}
-            </div>
           </div>
         ) : (
           <Link to="/" className="flex items-center gap-3">
