@@ -42,7 +42,9 @@
     "terms_privacy": "En continuant, vous acceptez les Conditions d'utilisation et Politique de confidentialité.",
     "session_expired": "Votre session a expiré. Veuillez vous reconnecter.",
     "login_failed": "Échec de la connexion",
-    "register_failed": "Échec de l'inscription"
+    "register_failed": "Échec de l'inscription",
+    "oauth_failed": "La connexion sociale a échoué. Veuillez réessayer.",
+    "missing_configuration": "La connexion sociale n'est pas configurée."
   },
   "home": {
     "hero_title_1": "RESTEZ INFORMÉS",

@@ -48,9 +48,20 @@ function NavBar() {
   useEffect(() => {
     const params = new URLSearchParams(location.search)
     const token = params.get('token')
+    const error = params.get('error')
+
+    if (error) {
+      setAuthOpen(true)
+      setMode('login')
+      setLoginError(error === 'missing_configuration' ? t('auth.missing_configuration') : t('auth.oauth_failed'))
+      navigate(location.pathname, { replace: true })
+    }
+
     async function handleToken() {
       if (!token) return
-      const res = await authFetch(`${API_URL}/api/auth/me`)
+      const res = await authFetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` } // Ensure token is passed
+      })
       const data = await res.json()
       if (res.ok && data?.user) {
         setAuth(token, data.user)
