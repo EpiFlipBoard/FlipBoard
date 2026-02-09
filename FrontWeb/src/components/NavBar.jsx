@@ -49,7 +49,7 @@ function NavBar() {
       } catch (e) {
         console.error('Notification check failed', e)
       }
-    }, 60000) // Check every minute
+    }, 10000) // Check every 10 seconds
 
     return () => clearInterval(interval)
   }, [user?.email]) // Re-run if user changes

@@ -10,6 +10,7 @@ import { getPageScrap } from '../../scripts/saveRenderedHTML.js'
 import { parseAutonews } from '../../scripts/parse/autonews.js'
 import { parseJeuneAfrique } from '../../scripts/parse/jeuneafrique.js'
 import { fetchAndSaveArticles } from '../../apis/aggregator.js'
+import { sendEmail } from '../utils/sendEmail.js'
 
 const router = express.Router()
 
@@ -259,7 +260,20 @@ router.post('/create', auth, async (req, res) => {
     if (user && user.followers.length > 0) {
       const emails = user.followers.map(u => u.email)
       console.log(`[EMAIL NOTIFICATION] Sending email to followers of ${user.name}:`, emails)
-      console.log(`Subject: New post from ${user.name}: ${title}`)
+      
+      const emailHtml = `
+        <h1>New Post from ${user.name}</h1>
+        <h2>${title}</h2>
+        <p>${description}</p>
+        <a href="${process.env.FRONTEND_URL || 'http://localhost:5173'}/article/${post._id}">Read more</a>
+      `
+
+      // Send emails in parallel
+      await Promise.all(emails.map(email => sendEmail({
+        to: email,
+        subject: `New post from ${user.name}: ${title}`,
+        html: emailHtml
+      })))
     }
   } catch (e) {
     console.error('Failed to send notifications', e)
