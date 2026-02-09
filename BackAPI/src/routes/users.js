@@ -184,4 +184,34 @@ router.get('/me/activity', auth, async (req, res) => {
   }
 })
 
+// Check for new posts from followed users since a timestamp
+router.get('/me/notifications/check', auth, async (req, res) => {
+  try {
+    const { since } = req.query
+    if (!since) return res.status(400).json({ error: 'Since timestamp required' })
+
+    const userId = req.user._id
+    const user = await User.findById(userId)
+    
+    // Find followed users
+    const followedUsers = await User.find({ _id: { $in: user.following } })
+    const followedIds = followedUsers.map(u => u._id)
+    const followedNames = followedUsers.map(u => u.name)
+
+    // Find posts created after 'since'
+    const newPosts = await Post.find({
+      $or: [
+        { authorId: { $in: followedIds } },
+        { author: { $in: followedNames } }
+      ],
+      createdAt: { $gt: new Date(since) }
+    }).countDocuments()
+
+    res.json({ newPosts })
+  } catch (e) {
+    console.error(e)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 export default router
