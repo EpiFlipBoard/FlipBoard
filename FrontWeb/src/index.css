@@ -18,4 +18,19 @@
   .btn-primary { @apply bg-brand-blue text-white hover:brightness-110; }
   .btn-muted { @apply bg-gray-200 text-gray-800 hover:bg-gray-300; }
   .search-input { @apply w-64 bg-black/40 text-white placeholder-white/50 border border-white/10 rounded px-3 py-2 focus:outline-none focus:ring focus:ring-white/20; }
+  
+  .profile-menu-enter {
+    animation: slideDown 0.2s ease-out;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
