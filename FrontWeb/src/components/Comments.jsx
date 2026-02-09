@@ -20,7 +20,11 @@ export default function Comments({ postId, onClose, isPopup = false }) {
   async function fetchComments(p) {
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/posts/${postId}/comments?page=${p}&limit=5`)
+      const headers = {}
+      const token = getToken()
+      if (token) headers.Authorization = `Bearer ${token}`
+
+      const res = await fetch(`${API_URL}/api/posts/${postId}/comments?page=${p}&limit=5`, { headers })
       const data = await res.json()
       if (res.ok) {
         setComments(data.comments)

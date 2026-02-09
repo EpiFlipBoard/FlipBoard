@@ -43,7 +43,11 @@ function Home() {
     async function load() {
       setLoading(true)
       try {
-        const res = await fetch(`${API_URL}/api/posts?page=${page}&limit=12`)
+        const headers = {}
+        const token = getToken()
+        if (token) headers.Authorization = `Bearer ${token}`
+
+        const res = await fetch(`${API_URL}/api/posts?page=${page}&limit=12`, { headers })
         const data = await res.json()
         const mapped = (data.posts || []).map(p => ({
           id: p._id,
