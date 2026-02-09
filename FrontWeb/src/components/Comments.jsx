@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { fr, enUS } from 'date-fns/locale'
 import { useTranslation } from 'react-i18next'
-import { getToken, authFetch } from '../lib/auth.js'
+import { getToken, authFetch, getUser } from '../lib/auth.js'
 import { API_URL } from '../config.js'
 
 export default function Comments({ postId, onClose, isPopup = false }) {
@@ -14,6 +14,8 @@ export default function Comments({ postId, onClose, isPopup = false }) {
   const [loading, setLoading] = useState(false)
   const [newComment, setNewComment] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  
+  const currentUser = getUser()
 
   async function fetchComments(p) {
     setLoading(true)
@@ -62,6 +64,23 @@ export default function Comments({ postId, onClose, isPopup = false }) {
       console.error(e)
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  async function handleDelete(commentId) {
+    if (!confirm(t('comments.confirm_delete'))) return
+
+    try {
+      const res = await authFetch(`${API_URL}/api/posts/${postId}/comments/${commentId}`, {
+        method: 'DELETE'
+      })
+      
+      if (res.ok) {
+        setComments(comments.filter(c => c.id !== commentId))
+        setTotal(t => t - 1)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -123,9 +142,23 @@ export default function Comments({ postId, onClose, isPopup = false }) {
                   <span className="font-bold text-gray-900 dark:text-white">
                     {c.user?.name || t('comments.unknown_user')}
                   </span>
-                  <span className="text-xs text-gray-500">
-                    {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: i18n.language.startsWith('fr') ? fr : enUS })}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-gray-500">
+                      {formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: i18n.language.startsWith('fr') ? fr : enUS })}
+                    </span>
+                    {currentUser && c.user && (currentUser.id === c.user.id || currentUser._id === c.user.id) && (
+                      <button 
+                        onClick={() => handleDelete(c.id)}
+                        className="text-gray-400 hover:text-red-500 transition"
+                        title={t('comments.delete')}
+                        aria-label={t('comments.delete')}
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" />
+                        </svg>
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <p className="text-gray-700 dark:text-gray-300 text-sm whitespace-pre-wrap">{c.text}</p>
               </div>

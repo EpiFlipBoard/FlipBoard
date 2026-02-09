@@ -102,7 +102,9 @@
     "unknown_user": "Utilisateur inconnu",
     "previous": "Précédent",
     "next": "Suivant",
-    "page_info": "Page {{page}} sur {{total}}"
+    "page_info": "Page {{page}} sur {{total}}",
+    "delete": "Supprimer",
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce commentaire ?"
   },
   "article": {
     "loading": "Chargement...",

@@ -335,6 +335,25 @@ router.post('/:id/comments', auth, async (req, res) => {
   res.json({ comment: { id: c._id, text: c.text, userId: c.userId, createdAt: c.createdAt } })
 })
 
+router.delete('/:id/comments/:commentId', auth, async (req, res) => {
+  const { commentId } = req.params
+  try {
+    const comment = await Comment.findById(commentId)
+    if (!comment) return res.status(404).json({ error: 'Comment not found' })
+    
+    // Check if user is author
+    if (String(comment.userId) !== String(req.user._id)) {
+      return res.status(403).json({ error: 'Unauthorized' })
+    }
+
+    await Comment.findByIdAndDelete(commentId)
+    res.json({ success: true })
+  } catch (error) {
+    console.error('Error deleting comment:', error)
+    res.status(500).json({ error: 'Server error' })
+  }
+})
+
 router.post('/:id/collect', auth, async (req, res) => {
   const { id } = req.params
   let collection = await Collection.findOne({ userId: req.user._id })
