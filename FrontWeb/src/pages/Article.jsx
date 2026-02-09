@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { API_URL } from '../config.js'
+import { getToken } from '../lib/auth.js'
 import Comments from '../components/Comments.jsx'
 
 function Article() {
@@ -13,7 +14,11 @@ function Article() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch(`${API_URL}/api/posts/${id}`)
+        const headers = {}
+        const token = getToken()
+        if (token) headers.Authorization = `Bearer ${token}`
+
+        const res = await fetch(`${API_URL}/api/posts/${id}`, { headers })
         const data = await res.json()
         if (res.ok) setPost(data.post)
       } catch (e) {

@@ -157,8 +157,7 @@
   "settings": {
     "tabs": {
       "profile": "Paramètres du profil",
-      "newsletters": "Abonnements aux Newsletters",
-      "content": "Options de contenu"
+      "newsletters": "Abonnements aux Newsletters"
     },
     "profile": {
       "header": "PARAMÈTRES DU COMPTE",
@@ -174,13 +173,6 @@
       "header": "ABONNEMENTS AUX NEWSLETTERS",
       "subscribe_all": "Abonnez-vous à tout",
       "unsubscribe_all": "Se désabonner de tout"
-    },
-    "content": {
-      "header": "OPTIONS DE CONTENU",
-      "muted_sources": "Sources et domaines en sourdine",
-      "no_muted": "Vous n'avez mis aucune source en sourdine",
-      "blocked_profiles": "Profils bloqués",
-      "no_blocked": "Vous n'avez bloqué personne"
     }
   },
   "edit_collection": {
@@ -200,13 +192,6 @@
     "external_source": "Source externe",
     "following": "Abonné",
     "follow": "Suivre",
-    "block": "Bloquer",
-    "unblock": "Débloquer",
-    "mute": "Masquer",
-    "unmute": "Afficher",
-    "confirm_block": "Êtes-vous sûr de vouloir bloquer cet utilisateur ? Vous ne verrez plus ses articles.",
-    "login_to_block": "Veuillez vous connecter pour bloquer des utilisateurs",
-    "login_to_mute": "Veuillez vous connecter pour masquer des utilisateurs",
     "published_articles": "Articles publiés",
     "no_articles": "Aucun article publié pour le moment."
   },
