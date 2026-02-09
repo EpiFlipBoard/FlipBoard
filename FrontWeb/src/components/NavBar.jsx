@@ -1,5 +1,5 @@
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { setAuth, getUser, clearAuth, authFetch } from '../lib/auth.js'
 import { API_URL } from '../config.js'
@@ -12,6 +12,7 @@ function NavBar() {
   const [q, setQ] = useState('')
   const [authOpen, setAuthOpen] = useState(false)
   const [profileOpen, setProfileOpen] = useState(false)
+  const profileMenuRef = useRef(null)
   const [mode, setMode] = useState('login')
   const [loginEmail, setLoginEmail] = useState('')
   const [loginPassword, setLoginPassword] = useState('')
@@ -60,6 +61,19 @@ function NavBar() {
     }
     handleToken()
   }, [location.search])
+
+  // Close profile menu when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileOpen(false)
+      }
+    }
+    if (profileOpen) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [profileOpen])
 
   async function onLogin(e) {
     e.preventDefault()
@@ -144,20 +158,21 @@ function NavBar() {
               </div>
               <button className="btn btn-primary" onClick={() => navigate('/create')}>{t('nav.create_article')}</button>
               <button className="nav-link text-gray-600 dark:text-white/80 hover:text-gray-900 dark:hover:text-white" title={t('nav.following')} onClick={() => navigate('/follows')}>{t('nav.following')}</button>
-              <div className="relative">
-                <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-white/40">
+              <div className="relative" ref={profileMenuRef}>
+                <button onClick={() => setProfileOpen(!profileOpen)} className="h-8 w-8 rounded-full overflow-hidden ring-2 ring-gray-200 dark:ring-white/40 hover:ring-brand-red transition-all duration-200">
                   <img src={user?.avatarUrl || '/nopfp.jpg'} alt="pfp" className="h-full w-full object-cover" />
                 </button>
                 {profileOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded shadow p-2">
-                    <div className="flex flex-col">
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>{t('nav.account')}</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>{t('nav.settings')}</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-between" onClick={toggleTheme}>
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl profile-menu-enter">
+                    <div className="flex flex-col p-1">
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-150" onClick={() => { setProfileOpen(false); navigate('/profile') }}>{t('nav.account')}</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md transition-colors duration-150" onClick={() => { setProfileOpen(false); navigate('/settings') }}>{t('nav.settings')}</button>
+                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md flex items-center justify-between transition-colors duration-150" onClick={toggleTheme}>
                         <span>{t('nav.dark_mode')}</span>
                         {theme === 'dark' && <span className="text-brand-red">✓</span>}
                       </button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>{t('nav.logout')}</button>
+                      <div className="border-t border-gray-200 dark:border-gray-700 my-1"></div>
+                      <button className="w-full text-left px-3 py-2 hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400 rounded-md transition-colors duration-150" onClick={() => { clearAuth(); setProfileOpen(false); navigate('/'); window.location.reload() }}>{t('nav.logout')}</button>
                     </div>
                   </div>
                 )}
