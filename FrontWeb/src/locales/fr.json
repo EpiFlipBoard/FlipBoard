@@ -105,7 +105,9 @@
     "next": "Suivant",
     "page_info": "Page {{page}} sur {{total}}",
     "delete": "Supprimer",
-    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce commentaire ?"
+    "confirm_delete": "Êtes-vous sûr de vouloir supprimer ce commentaire ?",
+    "mute_user": "Masquer l'utilisateur",
+    "confirm_mute": "Êtes-vous sûr de vouloir masquer cet utilisateur ? Vous ne verrez plus ses commentaires."
   },
   "article": {
     "loading": "Chargement...",
@@ -193,11 +195,18 @@
   "author": {
     "loading": "Chargement...",
     "not_found": "Auteur introuvable.",
-    "login_to_follow": "Veuillez vous connecter pour suivre un auteur.",
+    "login_to_follow": "Veuillez vous connecter pour suivre des auteurs",
     "member_since": "Membre depuis {{year}}",
     "external_source": "Source externe",
     "following": "Abonné",
     "follow": "Suivre",
+    "block": "Bloquer",
+    "unblock": "Débloquer",
+    "mute": "Masquer",
+    "unmute": "Afficher",
+    "confirm_block": "Êtes-vous sûr de vouloir bloquer cet utilisateur ? Vous ne verrez plus ses articles.",
+    "login_to_block": "Veuillez vous connecter pour bloquer des utilisateurs",
+    "login_to_mute": "Veuillez vous connecter pour masquer des utilisateurs",
     "published_articles": "Articles publiés",
     "no_articles": "Aucun article publié pour le moment."
   },

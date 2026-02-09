@@ -12,6 +12,8 @@ function Author() {
   const [user, setUser] = useState(null)
   const [posts, setPosts] = useState([])
   const [isFollowing, setIsFollowing] = useState(false)
+  const [isBlocked, setIsBlocked] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [loading, setLoading] = useState(true)
 
   const token = getToken()
@@ -28,15 +30,7 @@ function Author() {
         setUser(data.user)
         setPosts(data.posts)
         
-        // Check if I am following (if logged in)
         if (token) {
-           // We can check this by fetching "me" or just checking the user's followers list if we returned it
-           // Or we can rely on a specific check. 
-           // Simplest: The /api/users/:id endpoint could return "isFollowing" boolean if we passed the token.
-           // But I didn't implement that.
-           // However, I can check if *my* ID is in *their* followers list.
-           // But I don't have my ID easily unless I decode token or fetch /me.
-           // Let's fetch /me profile to check following list.
            fetchMyProfile(data.user._id)
         }
       }
@@ -55,6 +49,8 @@ function Author() {
       const data = await res.json()
       if (res.ok && data.user) {
         setIsFollowing(data.user.following.includes(targetId))
+        setIsBlocked((data.user.blockedUsers || []).includes(targetId))
+        setIsMuted((data.user.mutedUsers || []).includes(targetId))
       }
     } catch (e) {
       console.error(e)
@@ -65,18 +61,40 @@ function Author() {
     if (!token) return alert(t('author.login_to_follow'))
     
     try {
-      const res = await fetch(`${API_URL}/api/users/${id}/follow`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await authFetch(`${API_URL}/api/users/${id}/follow`, {
+        method: 'POST'
       })
       const data = await res.json()
       if (res.ok) {
         setIsFollowing(data.following)
-        // Update local follower count if displayed
       }
     } catch (e) {
       console.error(e)
     }
+  }
+
+  async function toggleBlock() {
+    if (!token) return alert(t('author.login_to_block'))
+    const action = isBlocked ? 'unblock' : 'block'
+    if (!isBlocked && !confirm(t('author.confirm_block'))) return
+
+    try {
+      const res = await authFetch(`${API_URL}/api/users/${user._id}/${action}`, { method: 'POST' })
+      if (res.ok) {
+        setIsBlocked(!isBlocked)
+        if (!isBlocked) setIsFollowing(false)
+      }
+    } catch(e) { console.error(e) }
+  }
+
+  async function toggleMute() {
+    if (!token) return alert(t('author.login_to_mute'))
+    const action = isMuted ? 'unmute' : 'mute'
+    
+    try {
+      const res = await authFetch(`${API_URL}/api/users/${user._id}/${action}`, { method: 'POST' })
+      if (res.ok) setIsMuted(!isMuted)
+    } catch(e) { console.error(e) }
   }
 
   if (loading) return <div className="text-gray-900 dark:text-white p-8">{t('author.loading')}</div>
@@ -99,16 +117,47 @@ function Author() {
             {user.isSource ? t('author.external_source') : t('author.member_since', { year: new Date(user.createdAt).getFullYear() })}
           </p>
         </div>
-        <button 
-          onClick={toggleFollow}
-          className={`px-6 py-2 rounded-full font-bold transition ${
-            isFollowing 
-              ? 'bg-white/10 text-white hover:bg-white/20' 
-              : 'bg-brand-red text-white hover:bg-red-700'
-          }`}
-        >
-          {isFollowing ? t('author.following') : t('author.follow')}
-        </button>
+        <div className="flex gap-2">
+          <button 
+            onClick={toggleFollow}
+            disabled={isBlocked}
+            className={`px-6 py-2 rounded-full font-bold transition ${
+              isFollowing 
+                ? 'bg-white/10 text-white hover:bg-white/20' 
+                : 'bg-brand-red text-white hover:bg-red-700'
+            } ${isBlocked ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isFollowing ? t('author.following') : t('author.follow')}
+          </button>
+          
+          {token && (
+            <>
+              <button 
+                onClick={toggleMute}
+                className={`px-4 py-2 rounded-full font-bold transition border ${
+                  isMuted
+                    ? 'bg-yellow-600 border-yellow-600 text-white' 
+                    : 'border-gray-300 dark:border-white/20 hover:bg-white/10'
+                }`}
+                title={isMuted ? t('author.unmute') : t('author.mute')}
+              >
+                {isMuted ? t('author.unmute') : t('author.mute')}
+              </button>
+              
+              <button 
+                onClick={toggleBlock}
+                className={`px-4 py-2 rounded-full font-bold transition border ${
+                  isBlocked
+                    ? 'bg-red-600 border-red-600 text-white' 
+                    : 'border-gray-300 dark:border-white/20 hover:bg-red-900/30 hover:border-red-500 hover:text-red-500'
+                }`}
+                title={isBlocked ? t('author.unblock') : t('author.block')}
+              >
+                {isBlocked ? t('author.unblock') : t('author.block')}
+              </button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Posts */}
