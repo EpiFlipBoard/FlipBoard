@@ -152,7 +152,6 @@ function NavBar() {
                   <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded shadow p-2">
                     <div className="flex flex-col">
                       <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/profile') }}>{t('nav.account')}</button>
-                      <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/statistics') }}>{t('nav.statistics')}</button>
                       <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded" onClick={() => { setProfileOpen(false); navigate('/settings') }}>{t('nav.settings')}</button>
                       <button className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded flex items-center justify-between" onClick={toggleTheme}>
                         <span>{t('nav.dark_mode')}</span>
