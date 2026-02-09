@@ -175,6 +175,16 @@
       "header": "ABONNEMENTS AUX NEWSLETTERS",
       "subscribe_all": "Abonnez-vous à tout",
       "unsubscribe_all": "Se désabonner de tout"
+    },
+    "delete": {
+      "header": "ZONE DANGEREUSE",
+      "description": "Supprimer votre compte efface votre profil, collections, commentaires et articles. Cette action est définitive.",
+      "button": "Supprimer le compte",
+      "deleting": "Suppression...",
+      "confirm": "Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est définitive.",
+      "confirm_google": "Vous êtes connecté avec Google. Supprimer quand même votre compte ? Cette action est définitive.",
+      "failed": "Échec de la suppression du compte.",
+      "google_connected": "Ce compte est connecté avec Google."
     }
   },
   "edit_collection": {
